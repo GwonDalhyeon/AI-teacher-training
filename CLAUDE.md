@@ -1,80 +1,58 @@
 # CLAUDE.md
 
-## Project Overview
+## Project
 
-Teacher training preparation project: **"ChatGPT를 이용한 수업 조언자 만들기"** — a 3-hour workshop for teachers.
+**"ChatGPT를 이용한 수업 조언자 만들기"** — 교사 대상 3시간 연수 자료 제작.
+Source: `04dc80ab9d_AI로_내_수업_비서_만들기.md`
 
-Source material: `04dc80ab9d_AI로_내_수업_비서_만들기.md` (converted from the original `.hwpx`). Use this as the base narrative when writing lecture content.
+## Training Position
 
-## Role
+    [앞 강의 3h] → [이 강의 3h] → [뒤 강의 6h]
+    다른 강사       권달현 (수학)    다른 강사
+    AI 활용 개론                     AI 수업 준비·활용 심화
 
-Act as an education training designer and instructional consultant with experience running AI workshops for Korean teachers. Understand where teachers struggle and what pacing, explanations, and activities they need.
+뒤 강사가 이 연수에서 만들어진 ChatGPT 프로젝트를 기반으로 6시간을 진행한다.
 
-## Deliverables Status
+## Core Required Outcome
 
-### Complete
-- `planning/principles.md` — Work principles (reference for tone and approach)
-- `planning/plan.md` — 5-stage production plan
-- `prompts/chatgpt-instructions.md` — ChatGPT project instructions (reference)
-- `worksheets/교사용_활동지.md` — Activity sheet template
+참여자 각자의 **ChatGPT 수업 설계 조언자 프로젝트** 완성이 이 3시간의 필수 목표.
 
-### Needs content written
-- `lecture/수정_강의록.md` — 3-hour lecture with instructor cues, timings, activity blocks
-- `slides/PPT_원고.md` — Slide-by-slide scripts
-- `webapps/lesson-alignment-checker/` — HTML app
-- `webapps/question-builder/` — HTML app
-- `webapps/rubric-builder/` — HTML app
-- `webapps/class-advisor-context-card/` — HTML app
+| 파일 | 용도 |
+|------|------|
+| `연수용 프로젝트 지침모음/ChatGPT용_수업설계조언자_프로젝트지침.md` | 프로젝트 지침에 붙여넣기 |
+| `연수용 프로젝트 지침모음/Layer_2_수업설계조언자.md` | 소스로 업로드 후 Layer 2 구성 시작 |
 
-## Output Standards
+## Instructor
 
-### Lecture notes (`수정_강의록.md`)
+- 교과: 수학
+- 수학 웹앱은 `math-webapps` 별도 프로젝트에서 제작
+- 이 연수의 웹앱: 여러 교과 시연용 (수학 앱은 별도)
 
-Each section block:
+## Deliverables
 
-    ## [섹션 제목] (XX분)
-    **유형**: 설명 | 시연 | 실습 | 정리
-    **강사 멘트**: ...
-    **참여자 활동**: ...
-    **준비 자료**: ...
-    > ⏩ 시간 부족 시: [대체 방법]
+| 파일 | 상태 |
+|------|------|
+| `planning/principles.md` | 완성 |
+| `planning/plan.md` | 완성 |
+| `prompts/chatgpt-instructions.md` | 완성 |
+| `worksheets/교사용_활동지.md` | 완성 |
+| `lecture/수정_강의록.md` | 작성 필요 |
+| `slides/PPT_원고.md` | 작성 필요 |
+| `webapps/*/index.html` (4개) | 제작 필요 |
 
-### PPT scripts (`PPT_원고.md`)
+## Sub-instructions
 
-Each slide block:
+세부 지침은 아래 파일을 확인한다.
 
-    슬라이드 번호:
-    슬라이드 제목:
-    화면 핵심 문장:
-    강사 멘트:
-    시연 또는 활동:
-    예상 소요 시간:
+- `planning/training-context.md` — 3시간 흐름, 뒤 강의 연결 방식
+- `planning/web-apps.md` — 웹앱 철학, 교과별 주제 목록
+- `planning/output-standards.md` — 강의록·PPT·웹앱 작성 형식
 
-### Web apps
+## File Naming
 
-- Single `.html` file per app, Tailwind CSS via CDN, no backend
-- Subject-specific variations must change the actual output structure, not just the label
-- Save as `index.html` inside each app subfolder
-
-## Core Principles
-
-1. Frame AI as an advisor to the teacher's judgment, never a replacement
-2. Every example must be transferable across subjects — Korean, English, Math, Social Studies, Science, Arts, Career ed, etc.
-3. Minimize technical explanation; focus on classroom improvement experience
-4. Always note privacy, student data, and copyright cautions when those contexts arise
-5. Keep all activities feasible within a 3-hour session
-6. Always mark whether the instructor demonstrates or participants do it themselves
-
-## File Naming Convention
-
-| Type | Convention |
-|------|-----------|
-| Planning, config, instructions | English, lowercase with hyphens |
-| Training materials (participant-facing) | Korean filenames preserved |
-| Web app folders | English, already set |
-
-## Reminders
-
-- `lecture/수정_강의록.md` must be finished before PPT scripts — it determines when each web app appears
-- Do not assume a specific subject when writing examples; always design for cross-subject use
-- Do not add features, files, or structure beyond what the task requires
+| 유형 | 규칙 |
+|------|------|
+| 설계·설정·지침 파일 | 영문 소문자 하이픈 |
+| 참여자가 직접 읽는 자료 | 한글 파일명 유지 |
+| `연수용 프로젝트 지침모음/` 내 파일 | 한글 유지 (ChatGPT에 그대로 업로드) |
+| 웹앱 폴더 | 영문 |
