@@ -44,9 +44,10 @@ Source: `04dc80ab9d_AI로_내_수업_비서_만들기.md`
 
 세부 지침은 아래 파일을 확인한다.
 
-- `planning/training-context.md` — 3시간 흐름, 뒤 강의 연결 방식
+- `planning/training-context.md` — 3시간 블록 구성, 미니 활동지, 생략 우선순위
 - `planning/web-apps.md` — 웹앱 철학, 교과별 주제 목록
 - `planning/output-standards.md` — 강의록·PPT·웹앱 작성 형식
+- `planning/ai-tools-guide.md` — AI 플랫폼 비교(Block 3), 웹 vs 로컬 AI 설명, Claude Code·Codex 소개(Block 4)
 
 ## File Naming
 
