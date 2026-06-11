@@ -1,0 +1,14 @@
+# Large or restricted reference materials
+source/*.pdf
+
+# Generated exports
+exports/*.pdf
+exports/*.pptx
+exports/*.zip
+
+# Local/editor files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+
