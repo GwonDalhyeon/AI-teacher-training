@@ -34,11 +34,22 @@ Source: `04dc80ab9d_AI로_내_수업_비서_만들기.md`
 |------|------|
 | `planning/principles.md` | 완성 |
 | `planning/plan.md` | 완성 |
+| `planning/training-context.md` | 완성 |
+| `planning/web-apps.md` | 완성 |
+| `planning/output-standards.md` | 완성 |
+| `planning/ai-tools-guide.md` | 완성 |
 | `prompts/chatgpt-instructions.md` | 완성 |
-| `worksheets/교사용_활동지.md` | 완성 |
-| `lecture/수정_강의록.md` | 작성 필요 |
-| `slides/PPT_원고.md` | 작성 필요 |
-| `webapps/*/index.html` (4개) | 제작 필요 |
+| `연수용 프로젝트 지침모음/ChatGPT용_수업설계조언자_프로젝트지침.md` | 완성 |
+| `연수용 프로젝트 지침모음/Layer_2_수업설계조언자.md` | 완성 |
+| `연수용 프로젝트 지침모음/Gems용_수업설계조언자_시스템지침.md` | 완성 |
+| `lecture/연수자_자료.md` | 완성 (A4 인쇄 최적화) |
+| `slides/PPT_원고.md` | 완성 (36슬라이드) |
+| `lecture/강사용_원고.md` | 완성 ([강사 메모] 블록 포함) |
+| `lecture/수정_강의록.md` | 스텁 — 삼문서 방식으로 대체됨, 삭제 가능 |
+| `webapps/수평투사/index.html` | 제작 필요 |
+| `webapps/전자기유도/index.html` | 제작 필요 |
+
+현황 상세 및 남은 작업 명세: `planning/status.md` 참고
 
 ## Sub-instructions
 
