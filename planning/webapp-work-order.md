@@ -1,10 +1,12 @@
-# 연수 시연용 웹앱 작업지시서
+# 연수 시연용 웹앱 작업지시서 및 검수 기준
 
 ## 1. 작업 목적
 
-교사 대상 3시간 연수의 Block 4에서 보여 줄 과학 시연용 웹앱 2개를 완성한다.
+교사 대상 3시간 연수의 Block 4에서 보여 줄 과학 시연용 웹앱 2개를 완성된 상태로 유지하고, 수정 시 같은 기준으로 검수한다.
 
 이 웹앱의 목적은 코딩 기술을 보여주는 것이 아니라, 교사가 "학생의 직관이 흔들리는 순간"을 웹앱으로 설계할 수 있다는 감각을 전달하는 것이다. 내용을 잘 모르는 학생이나 타교과 교사가 보아도 조작과 결과의 관계를 바로 이해할 수 있어야 한다.
+
+현재 상태: `horizontal-projectile`, `electromagnetic-induction` 두 앱 모두 구현·배포 확인 완료.
 
 배포 주소:
 
@@ -149,21 +151,22 @@
 - 핵심 오개념과 아하 모먼트가 화면에 분명히 드러난다.
 - 콘솔 오류가 없어야 한다.
 
-## 7. 작업 순서
+## 7. 재작업 순서
 
-1. `horizontal-projectile` 구현
-2. 로컬 브라우저에서 동작 확인
-3. 커밋 후 GitHub Pages에서 확인
-4. `electromagnetic-induction` 구현
-5. 로컬 브라우저와 GitHub Pages에서 확인
-6. `webapps/index.html` 목록 화면 문구를 최종 앱 상태에 맞게 다듬기
+앱을 다시 수정하거나 새 컴퓨터에서 이어 작업할 때는 아래 순서로 확인한다.
+
+1. `planning/status.md`에서 현재 배포 상태와 다음 작업을 확인한다.
+2. 수정 대상 앱을 로컬 브라우저에서 열어 주요 버튼 동작을 확인한다.
+3. 변경 후 데스크톱·모바일 폭에서 텍스트 겹침과 버튼 흐름을 확인한다.
+4. `webapps/index.html` 목록 링크가 정상 작동하는지 확인한다.
+5. 커밋·푸시 후 GitHub Pages에서 목록 페이지와 개별 앱 URL 3개를 확인한다.
 
 ## 8. 커밋 기준
 
-앱 하나를 완성할 때마다 별도 커밋으로 남긴다.
+앱 하나를 의미 있게 수정할 때마다 별도 커밋으로 남긴다.
 
 권장 커밋 메시지:
 
-- `Implement horizontal projectile demo`
-- `Implement electromagnetic induction demo`
 - `Polish webapp index page`
+- `Refine horizontal projectile demo`
+- `Refine electromagnetic induction demo`

@@ -438,10 +438,11 @@
 슬라이드 제목: [시연] 다른 교과 웹앱 예시 1 — 수평 투사 운동
 화면 핵심 문장/요소:
   - 웹앱 화면
+  - URL: https://gwondalhyeon.github.io/AI-teacher-training/webapps/horizontal-projectile/
   - 직관: "빠르게 던지면 더 빨리 떨어질 것 같다"
 강사 멘트:
   "통합과학1 내용입니다.
-  속력 슬라이더를 바꾸면 수평 이동 거리가 달라지죠.
+  속도 프리셋을 바꾸면 수평 이동 거리가 달라지죠.
   그런데 낙하 시간은 바뀌지 않습니다.
   수평과 수직 운동이 독립적이라는 것을 눈으로 확인할 수 있어요."
 시연 또는 활동: 웹앱 시연
@@ -454,6 +455,7 @@
 슬라이드 제목: [시연] 다른 교과 웹앱 예시 2 — 전자기 유도
 화면 핵심 문장/요소:
   - 웹앱 화면
+  - URL: https://gwondalhyeon.github.io/AI-teacher-training/webapps/electromagnetic-induction/
   - 직관: "자석이 가까이 있으면 전류가 흐를 것 같다"
 강사 멘트:
   "통합과학2입니다.

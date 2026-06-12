@@ -15,6 +15,7 @@
 - 웹앱 기술 스택: 단일 `index.html`, Tailwind CSS CDN, vanilla JavaScript
 - 파일·폴더명 원칙: 영문 사용
 - 웹 화면 표시 원칙: 제목, 버튼, 관찰 문장 등 사용자에게 보이는 문구는 한글 사용
+- 작업 지침: `AGENTS.md`와 `CLAUDE.md`는 현재 웹앱 완료·배포 상태를 같은 기준으로 공유한다.
 
 배포 URL:
 
@@ -23,6 +24,14 @@
 - 전자기 유도: `https://gwondalhyeon.github.io/AI-teacher-training/webapps/electromagnetic-induction/`
 
 현재 핵심 웹앱 2개는 구현, 커밋, 푸시, Pages 배포 확인까지 완료된 상태다.
+
+문과 계열 상위 3개 웹앱은 로컬 구현과 수업효과 사후 검토까지 완료했다. 아직 커밋, 푸시, Pages 배포 확인은 하지 않았다.
+
+로컬 구현 완료 앱:
+
+- 폭염 취약 지역 커뮤니티 매핑: `webapps/heat-vulnerability-map/index.html`
+- 계약 성립·효력 판단기: `webapps/contract-validity-checker/index.html`
+- 스마트 도시 균형 실험실: `webapps/smart-city-balance/index.html`
 
 ---
 
@@ -40,7 +49,18 @@
 ### 작업 지침 정리
 
 - `AGENTS.md`를 추가해 Codex가 이 저장소에서 따라야 할 작업 원칙을 정리했다.
+- `CLAUDE.md`와 `AGENTS.md`를 비교해 현재 웹앱 2개 완료·배포 상태 기준으로 통합했다.
+- 산출물 완료 여부와 다음 작업 우선순위는 `planning/status.md`를 기준으로 삼도록 정리했다.
+- `README.md`, `webapps/README.md`, `planning/plan.md`, `planning/web-apps.md`, `planning/webapp-work-order.md`를 현재 웹앱 완료·배포 상태에 맞게 갱신했다.
+- `slides/PPT_원고.md`, `lecture/강사용_원고.md`, `lecture/연수자_자료.md`에 웹앱 Pages URL과 실제 조작 방식 설명을 반영했다.
 - `planning/webapp-work-order.md`에 연수 시연용 웹앱 제작 지시서를 작성했다.
+- 문과 계열 교과서 PDF 3종(`도시의 미래탐구`, `법과 사회`, `화법과언어`)을 검토하고, 도시·법 웹앱 후보 6개에 대한 개별 작업지시서를 `planning/humanities-webapp-work-orders/`에 작성했다.
+- 문과 계열 웹앱 병렬 구현을 위해 `planning/humanities-webapp-work-orders/agent-workflow.md`에 조율 에이전트, 수업효과 검토 에이전트, 구현 에이전트의 역할과 검토 기준을 정리했다.
+- 수업효과 검토 에이전트가 후보 6개를 평가해 상위 3개(`폭염 취약 지역 커뮤니티 매핑`, `계약 성립·효력 판단기`, `스마트 도시 균형 실험실`)를 선별했다.
+- 구현 에이전트 3명이 상위 3개 웹앱을 각자 독립 폴더에 병렬 구현했다.
+- 구현 후 수업효과 검토 에이전트가 세 앱 모두 `통과` 판정을 냈다.
+- 조율 단계에서 `webapps/index.html`과 `webapps/README.md`에 문과 계열 앱 3개를 연결했다.
+- `화법과 언어`는 작업지시서가 아니라 아하포인트가 생길 만한 주제 제안으로 정리했다. 위치: `planning/humanities-webapp-work-orders/korean-language-topic-proposals.md`
 - 사용자 피드백을 반영해 전자기 유도 앱의 초점을 오른손법칙이 아니라 "코일을 지나는 자기장 변화와 전류계 반응"으로 수정했다.
 
 ### 웹앱 1: 수평 투사 운동
@@ -116,7 +136,13 @@ AI-teacher-training/
     ├── README.md
     ├── horizontal-projectile/
     │   └── index.html
-    └── electromagnetic-induction/
+    ├── electromagnetic-induction/
+    │   └── index.html
+    ├── heat-vulnerability-map/
+    │   └── index.html
+    ├── contract-validity-checker/
+    │   └── index.html
+    └── smart-city-balance/
         └── index.html
 ```
 
@@ -141,15 +167,13 @@ AI-teacher-training/
 
 파일: `webapps/index.html`
 
-현재 목록 페이지는 두 앱으로 이동하는 허브 역할을 한다. 다음 작업에서는 실제 연수 순서에 맞춰 더 자연스럽게 다듬을 수 있다.
+현재 목록 페이지는 두 앱으로 이동하는 허브 역할을 한다. 실제 연수 시연 순서, 각 앱의 "깨야 할 직관", "보여 줄 변화" 문구를 반영해 다듬었다.
 
-권장 수정:
+추가 검토:
 
-- 두 앱을 연수 시연 순서대로 더 분명히 배치
-- 각 카드에 "깨야 할 직관"과 "보여 줄 변화"를 짧게 표시
 - 현장용 링크 또는 QR 코드 제작 여부 결정
 
-### 3순위: 슬라이드·강사용 원고와 연결
+### 3순위: 슬라이드·강사용 원고 연결 점검
 
 파일:
 
@@ -157,11 +181,15 @@ AI-teacher-training/
 - `lecture/강사용_원고.md`
 - `lecture/연수자_자료.md`
 
-권장 작업:
+현재 반영된 내용:
 
-- Block 4 시연 위치에 Pages URL을 삽입한다.
-- 강사용 원고에 각 앱별 질문 문장을 추가한다.
-- 연수자 자료에는 URL을 길게 넣기보다 목록 페이지 URL 또는 QR 코드 중심으로 안내한다.
+- Block 4 시연 위치에 각 앱 Pages URL을 삽입했다.
+- 강사용 원고에 각 앱별 질문 문장과 조작 흐름을 추가했다.
+- 연수자 자료에는 다른 교과 시연 앱 URL 2개를 안내했다.
+
+추가 검토:
+
+- 최종 배포본에서는 긴 URL을 QR 코드 또는 목록 페이지 URL 중심으로 줄일지 결정한다.
 
 예시 질문:
 
@@ -179,18 +207,55 @@ AI-teacher-training/
 
 현재 구현은 CDN 기반이므로, 학교 네트워크에서 CDN이 막히는 경우 오프라인용 CSS 내장 버전을 별도로 만들 수 있다.
 
-### 5순위: 남은 로컬 변경 검토
+### 5순위: 문과 계열 웹앱 배포 확인
 
-현재 작업 중 `README.md`에 커밋되지 않은 로컬 수정이 남아 있을 수 있다.
+로컬 구현과 수업효과 검토를 통과한 문과 계열 웹앱 3개를 커밋·푸시한 뒤 Pages에서 열리는지 확인한다.
 
-확인 명령:
+확인할 URL:
 
-```bash
-git status --short
-git diff -- README.md
-```
+- `https://gwondalhyeon.github.io/AI-teacher-training/webapps/heat-vulnerability-map/`
+- `https://gwondalhyeon.github.io/AI-teacher-training/webapps/contract-validity-checker/`
+- `https://gwondalhyeon.github.io/AI-teacher-training/webapps/smart-city-balance/`
 
-확인된 변경은 `prompts/ChatGPT_프로젝트_지침.md`를 `prompts/ChatGPT_프로젝트_기본_지침.md`로 바꾸는 내용이다. 다음 작업자가 이 변경이 필요한지 판단한 뒤 별도 커밋 여부를 결정한다.
+확인할 것:
+
+- 목록 페이지에서 세 앱 링크가 열린다.
+- 각 앱의 핵심 버튼과 토글이 Pages 환경에서도 동작한다.
+- Tailwind CDN이 학교 네트워크에서 차단되는지 확인한다.
+
+### 6순위: 지침 문서 동기화 유지
+
+다른 컴퓨터나 다른 AI 도구에서 작업한 뒤에는 `AGENTS.md`, `CLAUDE.md`, `planning/status.md`가 서로 충돌하지 않는지 확인한다.
+
+운영 원칙:
+
+- 현재 상태와 남은 작업은 `planning/status.md`에 가장 구체적으로 기록한다.
+- `AGENTS.md`와 `CLAUDE.md`에는 반복 작업 규칙, 프로젝트 맥락, 현재 핵심 산출물만 간결하게 유지한다.
+- 웹앱 제작 여부처럼 바뀔 수 있는 표현은 "제작 필요"로 남기지 말고 완료·배포 여부를 확인한 뒤 갱신한다.
+
+### 후속 후보: 문과 계열 웹앱 작업지시서
+
+위치: `planning/humanities-webapp-work-orders/`
+
+도시의 미래탐구:
+
+- `city-smart-city-balance.md`
+- `city-heat-vulnerability-map.md`
+- `city-budget-for-all.md`
+
+법과 사회:
+
+- `law-contract-validity-checker.md`
+- `law-inheritance-family-tree.md`
+- `law-youth-rights-age-lab.md`
+
+화법과 언어:
+
+- `korean-language-topic-proposals.md`
+
+도시·법 상위 3개 웹앱은 구현과 수업효과 검토를 통과했다. 나머지 3개를 실제 구현할 때는 위 개별 작업지시서를 기준으로 하되, 기존 과학 웹앱과 마찬가지로 단일 `index.html`, Tailwind CSS CDN, vanilla JavaScript 기준을 유지한다.
+
+병렬 구현 시에는 `planning/humanities-webapp-work-orders/agent-workflow.md`를 먼저 따른다. 수업효과 검토 에이전트가 후보 6개를 엄격히 평가해 상위 3개를 먼저 선택하고, 구현 결과가 학습목표와 아하포인트를 충분히 살리지 못하면 수정 요구 또는 보류 판정을 낼 수 있다.
 
 ---
 
