@@ -1,0 +1,18 @@
+include:
+  - webapps
+
+exclude:
+  - 04dc80ab9d_AI로_내_수업_비서_만들기.md
+  - AGENTS.md
+  - CLAUDE.md
+  - README.md
+  - assets
+  - converted
+  - exports
+  - lecture
+  - planning
+  - prompts
+  - slides
+  - source
+  - worksheets
+  - 연수용 프로젝트 지침모음
