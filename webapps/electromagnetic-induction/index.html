@@ -6,371 +6,545 @@
     <title>전자기 유도</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .meter-needle {
-        transform-origin: 50% 90%;
-        transition: transform 160ms ease-out;
-      }
-
-      .field-ring {
-        animation: fieldPulse 1200ms ease-out infinite;
-      }
-
-      .flux-line {
-        stroke-linecap: round;
-        transition: opacity 180ms ease-out, stroke-width 180ms ease-out;
-      }
-
-      .arrow {
-        transition: opacity 180ms ease-out, transform 180ms ease-out;
-      }
-
-      @keyframes fieldPulse {
-        0% {
-          transform: scale(0.82);
-          opacity: 0.55;
-        }
-        100% {
-          transform: scale(1.16);
-          opacity: 0;
-        }
-      }
+      .scene-svg { display: block; width: 100%; height: auto; }
+      .magnet-grp { cursor: ew-resize; user-select: none; }
     </style>
   </head>
-  <body class="min-h-screen overflow-x-hidden bg-rose-50 text-zinc-950">
-    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-      <header class="mb-5">
-        <div class="flex flex-wrap items-center gap-2">
-          <a class="text-sm font-semibold text-rose-700 hover:text-rose-900" href="../">연수 시연용 웹앱</a>
-          <span class="text-sm text-zinc-400">/</span>
-          <p class="text-sm font-semibold text-rose-700">통합과학2</p>
+  <body class="min-h-screen bg-rose-50 text-zinc-950">
+    <main class="mx-auto w-full max-w-5xl px-4 py-5">
+
+      <header class="mb-4">
+        <div class="flex flex-wrap gap-2 text-sm font-semibold text-rose-700">
+          <a href="../">연수 시연용 웹앱</a>
+          <span class="text-zinc-400">/</span>
+          <span>통합과학2</span>
         </div>
-        <h1 class="mt-2 text-3xl font-bold tracking-normal sm:text-4xl">전자기 유도</h1>
-        <p class="mt-3 max-w-3xl text-base leading-7 text-zinc-700">
-          자석이 가까이 있기만 하면 전류가 흐를 것 같지만, 전류는 자석이 움직이며 자기장이 변할 때 생깁니다.
+        <h1 class="mt-2 text-3xl font-bold">전자기 유도</h1>
+        <p class="mt-2 max-w-2xl text-zinc-700">
+          자석이 코일 안에 있어도 <strong>멈추면 전류는 없습니다.</strong>
+          코일을 지나는 자기장이 <em>변할 때</em>만 전류가 생깁니다.
         </p>
       </header>
 
-      <section class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
-        <div class="rounded-lg border border-rose-200 bg-white p-3 shadow-sm sm:p-4">
-          <div
-            id="scene"
-            class="relative h-[430px] min-h-[360px] overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-b from-white via-rose-50 to-white"
-            aria-label="전자기 유도 시각화"
-          >
-            <div class="absolute left-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs font-semibold text-zinc-600 shadow-sm sm:text-sm">
-              가까이 있음보다 움직임이 중요함
-            </div>
+      <!-- 조작 컨트롤 -->
+      <div class="mb-3 flex flex-wrap items-center gap-2">
+        <button data-preset="slow"  class="preset-btn rounded-md bg-sky-700 px-3 py-2 text-sm font-semibold text-white">천천히 왕복</button>
+        <button data-preset="fast"  class="preset-btn rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-400">빠르게 왕복</button>
+        <button data-preset="accel" class="preset-btn rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-400">가속 왕복</button>
+        <button id="btnReset" class="rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-600 hover:border-zinc-400">초기화</button>
+        <button id="btnCompare" class="ml-auto rounded-md border border-rose-400 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100">코일 비교 보기 ↓</button>
+      </div>
 
-            <svg class="absolute inset-0 h-full w-full" aria-hidden="true" viewBox="0 0 720 430" preserveAspectRatio="none">
-              <defs>
-                <marker id="arrowHead" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
-                  <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"></path>
-                </marker>
-              </defs>
-              <path id="fluxLineTop" class="flux-line" d="M172 186 C270 166, 382 166, 510 186" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowHead)" opacity="0.25"></path>
-              <path id="fluxLineMid" class="flux-line" d="M168 216 C286 216, 392 216, 516 216" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#arrowHead)" opacity="0.35"></path>
-              <path id="fluxLineBottom" class="flux-line" d="M172 246 C270 266, 382 266, 510 246" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowHead)" opacity="0.25"></path>
-              <text id="fluxLabel" x="358" y="126" text-anchor="middle" fill="#9f1239" font-size="15" font-weight="700">코일 안 자기장: 변화 없음</text>
-            </svg>
-
-            <div id="solenoid" class="absolute left-[33%] top-[52%] h-36 w-[34%] -translate-y-1/2 rounded-[999px] border-4 border-amber-800 bg-amber-100/30 shadow-inner">
-              <div class="absolute inset-y-2 left-[6%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[18%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[30%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[42%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[54%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[66%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-              <div class="absolute inset-y-2 left-[78%] w-[8%] rounded-full border-4 border-amber-700 bg-white/30"></div>
-            </div>
-            <div id="fluxWindow" class="absolute left-[50%] top-[52%] h-44 w-[28%] -translate-x-1/2 -translate-y-1/2 rounded-[999px] border border-amber-500/30 bg-amber-200/10"></div>
-            <div id="fieldPulse" class="field-ring absolute left-[50%] top-[52%] hidden h-48 w-[36%] -translate-x-1/2 -translate-y-1/2 rounded-[999px] border-4 border-rose-400"></div>
-
-            <div id="magnet" class="absolute top-[52%] z-10 flex h-16 w-36 -translate-y-1/2 overflow-hidden rounded-md border border-zinc-800 shadow-lg sm:h-20">
-              <div class="flex flex-1 items-center justify-center bg-red-600 text-xl font-bold text-white">N</div>
-              <div class="flex flex-1 items-center justify-center bg-blue-700 text-xl font-bold text-white">S</div>
-            </div>
-
-            <div class="absolute right-3 top-16 h-24 w-24 rounded-full border-4 border-zinc-800 bg-white shadow-sm sm:right-10 sm:h-32 sm:w-32">
-              <div class="absolute left-1/2 top-[18px] h-2 w-2 -translate-x-1/2 rounded-full bg-zinc-800"></div>
-              <div class="absolute bottom-[28px] left-1/2 h-[46px] w-1 -translate-x-1/2 rounded bg-zinc-300 sm:bottom-[34px] sm:h-[62px]"></div>
-              <div id="needle" class="meter-needle absolute bottom-[28px] left-1/2 h-[46px] w-1 -translate-x-1/2 rounded bg-rose-600 sm:bottom-[34px] sm:h-[62px]"></div>
-              <div class="absolute bottom-4 left-0 right-0 text-center text-[11px] font-bold text-zinc-600 sm:bottom-5 sm:text-xs">전류계</div>
-              <div class="absolute bottom-9 left-4 text-[11px] font-bold text-blue-700 sm:bottom-11 sm:left-5 sm:text-xs">-</div>
-              <div class="absolute bottom-9 right-4 text-[11px] font-bold text-red-700 sm:bottom-11 sm:right-5 sm:text-xs">+</div>
-            </div>
-
-            <div id="currentBadge" class="absolute bottom-4 left-4 right-4 rounded-md bg-white/90 px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm">
-              자석을 움직이면 전류계가 반응합니다.
-            </div>
-          </div>
+      <!-- 씬 1 -->
+      <div class="mb-2 rounded-xl border border-rose-200 bg-white p-2 shadow-sm">
+        <div class="mb-1 flex items-center gap-2 px-1">
+          <span class="h-3 w-3 rounded-full bg-orange-400"></span>
+          <span class="text-xs font-semibold text-zinc-500">코일 5회</span>
         </div>
+        <svg id="scene1" class="scene-svg" viewBox="0 0 800 270"></svg>
+      </div>
 
-        <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-          <h2 class="text-lg font-bold">시연 조작</h2>
-          <div class="mt-4 grid gap-2" role="group" aria-label="자석 움직임 선택">
-            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="near">
-              가까이 두기
-            </button>
-            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="slowIn">
-              천천히 넣기
-            </button>
-            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="fastIn">
-              빠르게 넣기
-            </button>
-            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="out">
-              빼기
-            </button>
-          </div>
+      <!-- 씬 2 (기본 숨김) -->
+      <div id="wrap2" class="mb-2 hidden rounded-xl border border-violet-200 bg-white p-2 shadow-sm">
+        <div class="mb-1 flex items-center gap-2 px-1">
+          <span class="h-3 w-3 rounded-full bg-violet-500"></span>
+          <span class="text-xs font-semibold text-zinc-500">코일 10회</span>
+        </div>
+        <svg id="scene2" class="scene-svg" viewBox="0 0 800 270"></svg>
+      </div>
 
-          <dl class="mt-5 space-y-3 text-sm">
-            <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">현재 상태</dt>
-              <dd id="stateText" class="mt-1 text-xl font-bold">대기 중</dd>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div class="rounded-md bg-rose-50 p-3">
-                <dt class="font-semibold text-rose-800">전류 세기</dt>
-                <dd id="currentStrength" class="mt-1 text-xl font-bold">0</dd>
-              </div>
-              <div class="rounded-md bg-blue-50 p-3">
-                <dt class="font-semibold text-blue-800">전류 방향</dt>
-                <dd id="currentDirection" class="mt-1 text-xl font-bold">없음</dd>
-              </div>
-            </div>
-            <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">코일 안 자기장</dt>
-              <dd id="fluxState" class="mt-1 text-xl font-bold">변화 없음</dd>
-            </div>
-            <div class="rounded-md bg-amber-50 p-3">
-              <dt class="font-semibold text-amber-800">관찰 포인트</dt>
-              <dd id="observation" class="mt-1 leading-6 text-zinc-700">
-                자석이 멈춰 있으면 코일 안 자기장이 변하지 않아 전류는 0입니다.
-              </dd>
-            </div>
-          </dl>
-        </aside>
-      </section>
+      <!-- 그래프 -->
+      <div class="rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+        <div class="mb-1 flex flex-wrap gap-4 text-xs font-semibold text-zinc-400">
+          <span>상대 세기</span>
+          <span class="flex items-center gap-1"><span class="inline-block h-px w-5 bg-zinc-300" style="height:2px"></span>자석 속도</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-5 bg-orange-400" style="height:2px"></span>전류 (코일 5회)</span>
+          <span id="leg2" class="hidden items-center gap-1"><span class="inline-block w-5 bg-violet-500" style="height:2px"></span>전류 (코일 10회)</span>
+        </div>
+        <canvas id="graph1" class="block w-full" height="110"></canvas>
+        <div id="gwrap2" class="mt-2 hidden">
+          <canvas id="graph2" class="block w-full" height="110"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-zinc-700">
+        <strong class="text-amber-800">핵심 관찰</strong>
+        — 속도 곡선과 전류 곡선은 같은 형태입니다. 코일 중앙에서 속도가 있어도 전류는 0입니다. 코일이 많을수록 전류가 큽니다.
+      </div>
     </main>
 
     <script>
-      const scene = document.getElementById("scene");
-      const magnet = document.getElementById("magnet");
-      const needle = document.getElementById("needle");
-      const fieldPulse = document.getElementById("fieldPulse");
-      const fluxWindow = document.getElementById("fluxWindow");
-      const fluxLabel = document.getElementById("fluxLabel");
-      const fluxLines = [
-        document.getElementById("fluxLineTop"),
-        document.getElementById("fluxLineMid"),
-        document.getElementById("fluxLineBottom"),
-      ];
-      const currentBadge = document.getElementById("currentBadge");
-      const stateText = document.getElementById("stateText");
-      const currentStrength = document.getElementById("currentStrength");
-      const currentDirection = document.getElementById("currentDirection");
-      const fluxState = document.getElementById("fluxState");
-      const observation = document.getElementById("observation");
-      const scenarioButtons = [...document.querySelectorAll(".scenario")];
+    // ── 상수 ────────────────────────────────────────────────────────
+    const SL = 100, SR = 540, SCY = 135; // 솔레노이드 영역
+    const SW = SR - SL;
+    const CRY = 30;   // 원통 반지름
+    const CRYO = 44;  // 코일 호 반지름 (원통 밖으로 돌출)
+    const MW = 88, MH = 32;       // 자석 크기
+    const GCX = 700, GCY = 135, GR = 58; // 검류계
+    const XMIN = 10, XMAX = 760;  // 자석 드래그 범위
+    const N1 = 5, N2 = 10;
+    const NDOTS = 6;
+    const GBUF = 480;
 
-      const scenarios = {
-        near: {
-          label: "가까이 두기",
-          from: 0.18,
-          to: 0.25,
-          duration: 650,
-          angle: 0,
-          strength: "0",
-          direction: "없음",
-          activeText: "자석이 가까이 있지만 멈춰 있음",
-          endText: "정지 상태",
-          flux: "변화 없음",
-          fluxLevel: 0.35,
-          note: "자석이 가까이 있어도 코일 안 자기장이 변하지 않으면 전류는 흐르지 않습니다.",
-          moving: false,
-        },
-        slowIn: {
-          label: "천천히 넣기",
-          from: 0.13,
-          to: 0.44,
-          duration: 2400,
-          angle: 24,
-          strength: "약함",
-          direction: "오른쪽",
-          activeText: "자석이 천천히 들어가는 중",
-          endText: "자석 정지, 전류 0",
-          flux: "천천히 증가",
-          fluxLevel: 0.62,
-          note: "자석이 들어가는 동안 코일 안 자기장이 증가합니다. 움직임이 멈추면 전류도 0이 됩니다.",
-          moving: true,
-        },
-        fastIn: {
-          label: "빠르게 넣기",
-          from: 0.13,
-          to: 0.44,
-          duration: 1100,
-          angle: 48,
-          strength: "강함",
-          direction: "오른쪽",
-          activeText: "자석이 빠르게 들어가는 중",
-          endText: "자석 정지, 전류 0",
-          flux: "빠르게 증가",
-          fluxLevel: 0.9,
-          note: "더 빠르게 움직이면 코일 안 자기장이 더 빨리 변해 전류계가 더 크게 흔들립니다.",
-          moving: true,
-        },
-        out: {
-          label: "빼기",
-          from: 0.44,
-          to: 0.13,
-          duration: 1500,
-          angle: -38,
-          strength: "중간",
-          direction: "왼쪽",
-          activeText: "자석을 빼는 중",
-          endText: "자석 정지, 전류 0",
-          flux: "감소",
-          fluxLevel: 0.58,
-          note: "자석을 빼면 코일 안 자기장이 줄어듭니다. 변화 방향이 바뀌어 전류계도 반대로 움직입니다.",
-          moving: true,
-        },
-      };
+    // ── 상태 ────────────────────────────────────────────────────────
+    let magX = XMIN + 10;
+    let prevMagX = magX;
+    let smoothVel = 0;
+    let drag = null;   // { startSvgX, startMagX }
+    let preset = null; // { fn, dur, startT }
+    let comparing = false;
+    let lastT = 0;
 
-      let animationId = null;
-      let startTime = null;
-      let selectedScenario = null;
+    const buf = new Float32Array(GBUF * 3); // [vel, cur1, cur2] x GBUF
+    let bHead = 0, lastBufT = 0;
 
-      function xFromRatio(ratio) {
-        return scene.clientWidth * ratio;
+    // 도트 위상 [씬 인덱스][도트 인덱스]
+    const phases = [
+      Array.from({length: NDOTS}, (_, i) => i / NDOTS),
+      Array.from({length: NDOTS}, (_, i) => i / NDOTS),
+    ];
+
+    // ── 물리 ────────────────────────────────────────────────────────
+    function coupling(mx) {
+      const dx = (mx - (SL + SR) / 2) / (SW / 2);
+      const s = 0.72;
+      return -dx * Math.exp(-(dx * dx) / (2 * s * s)) * 2.2;
+    }
+
+    function fluxMag(mx) {
+      const dx = (mx - (SL + SR) / 2) / (SW / 2);
+      const s = 0.62;
+      return Math.exp(-(dx * dx) / (2 * s * s));
+    }
+
+    function calcCurrent(vel, mx, N) {
+      return Math.max(-1, Math.min(1, coupling(mx) * vel * (N / N1)));
+    }
+
+    // ── SVG 유틸 ────────────────────────────────────────────────────
+    const NS = 'http://www.w3.org/2000/svg';
+
+    function el(tag, attrs) {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+      return e;
+    }
+
+    function txt(parent, str, attrs) {
+      const e = el('text', attrs);
+      e.textContent = str;
+      parent.appendChild(e);
+      return e;
+    }
+
+    // ── 씬 생성 ─────────────────────────────────────────────────────
+    function buildScene(svgId, N, sid) {
+      const svg = document.getElementById(svgId);
+      svg.innerHTML = '';
+
+      // defs (화살표 마커)
+      const defs = el('defs', {});
+      ['r','b'].forEach((c, i) => {
+        const m = el('marker', { id: `ar${c}${sid}`, markerWidth:'7', markerHeight:'7', refX:'6', refY:'3.5', orient:'auto' });
+        m.appendChild(el('path', { d:'M0,0 L7,3.5 L0,7 Z', fill: i===0 ? '#dc2626' : '#2563eb' }));
+        defs.appendChild(m);
+      });
+      svg.appendChild(defs);
+
+      // 외부 자기장선 그룹 (맨 뒤)
+      svg.appendChild(el('g', { id: `ef${sid}` }));
+
+      // 원통 몸체
+      svg.appendChild(el('rect', {
+        x: SL, y: SCY - CRY, width: SW, height: CRY * 2, rx: CRY,
+        fill: '#fefce8', stroke: '#ca8a04', 'stroke-width': '1.5'
+      }));
+
+      // 내부 자기장선 그룹
+      svg.appendChild(el('g', { id: `if${sid}` }));
+
+      // 코일 뒷면 호 (점선, 먼저 그려 뒤에 있는 것처럼)
+      const pitch = SW / N;
+      const backG = el('g', {});
+      for (let i = 0; i < N; i++) {
+        const x1 = SL + i * pitch, x2 = SL + (i + 1) * pitch;
+        backG.appendChild(el('path', {
+          d: `M ${x1} ${SCY} A ${pitch/2} ${CRYO} 0 0 1 ${x2} ${SCY}`,
+          fill: 'none', stroke: '#92400e', 'stroke-width': '2.5',
+          'stroke-dasharray': '4,3', opacity: '0.55'
+        }));
+      }
+      svg.appendChild(backG);
+
+      // 원통 끝면 (3D 감, 코일 뒷면 위에 레이어)
+      [SL, SR].forEach(cx => {
+        svg.appendChild(el('ellipse', {
+          cx, cy: SCY, rx: 9, ry: CRY,
+          fill: '#fde68a', stroke: '#ca8a04', 'stroke-width': '1.5'
+        }));
+      });
+
+      // 코일 앞면 호 (실선, 맨 위)
+      const frontG = el('g', {});
+      for (let i = 0; i < N; i++) {
+        const x1 = SL + i * pitch, x2 = SL + (i + 1) * pitch;
+        frontG.appendChild(el('path', {
+          d: `M ${x1} ${SCY} A ${pitch/2} ${CRYO} 0 0 0 ${x2} ${SCY}`,
+          fill: 'none', stroke: '#92400e', 'stroke-width': '3.5'
+        }));
+      }
+      svg.appendChild(frontG);
+
+      // 전선 (코일 → 검류계)
+      const wa = { fill: 'none', stroke: '#374151', 'stroke-width': '2', 'stroke-dasharray': '6,3' };
+      svg.appendChild(el('path', { ...wa, d: `M ${SR} ${SCY-CRY-1} Q ${SR+38} ${SCY-82} ${GCX-GR+4} ${GCY-6}` }));
+      svg.appendChild(el('path', { ...wa, d: `M ${SR} ${SCY+CRY+1} Q ${SR+38} ${SCY+82} ${GCX-GR+4} ${GCY+6}` }));
+
+      // 검류계
+      const gG = el('g', {});
+      gG.appendChild(el('circle', { cx: GCX, cy: GCY, r: GR, fill: 'white', stroke: '#374151', 'stroke-width': '2.5' }));
+      const sr = GR - 11;
+      gG.appendChild(el('path', {
+        d: `M ${GCX-sr} ${GCY} A ${sr} ${sr} 0 0 1 ${GCX+sr} ${GCY}`,
+        fill: 'none', stroke: '#9ca3af', 'stroke-width': '1.5'
+      }));
+      for (let a = -80; a <= 80; a += 20) {
+        const rad = (a - 90) * Math.PI / 180;
+        gG.appendChild(el('line', {
+          x1: GCX + (GR-18) * Math.cos(rad), y1: GCY + (GR-18) * Math.sin(rad),
+          x2: GCX + (GR-11) * Math.cos(rad), y2: GCY + (GR-11) * Math.sin(rad),
+          stroke: '#6b7280', 'stroke-width': a === 0 ? '2' : '1.5'
+        }));
+      }
+      txt(gG, '−', { x: GCX-sr+3,  y: GCY+16, 'text-anchor':'middle', 'font-size':'12', fill:'#2563eb', 'font-weight':'700' });
+      txt(gG, '+', { x: GCX+sr-3,  y: GCY+16, 'text-anchor':'middle', 'font-size':'12', fill:'#dc2626', 'font-weight':'700' });
+      txt(gG, '0', { x: GCX,       y: GCY-sr+2,'text-anchor':'middle','font-size':'9',  fill:'#9ca3af' });
+      txt(gG, 'G', { x: GCX,       y: GCY+GR-6,'text-anchor':'middle','font-size':'11', fill:'#4b5563', 'font-weight':'700' });
+      gG.appendChild(el('circle', { cx: GCX, cy: GCY, r: '4', fill: '#374151' }));
+      gG.appendChild(el('line', {
+        id: `nd${sid}`, x1: GCX, y1: GCY, x2: GCX, y2: GCY - (GR - 14),
+        stroke: '#dc2626', 'stroke-width': '2.5', 'stroke-linecap': 'round'
+      }));
+      svg.appendChild(gG);
+
+      // 전류 도트 그룹
+      const dotColor = sid === 1 ? '#f97316' : '#8b5cf6';
+      const dG = el('g', { id: `dots${sid}` });
+      for (let i = 0; i < NDOTS; i++) {
+        dG.appendChild(el('circle', { id: `dot${sid}x${i}`, r: '5', fill: dotColor, opacity: '0' }));
+      }
+      svg.appendChild(dG);
+
+      // 자석 그룹 (최상위)
+      const mG = el('g', { id: `mag${sid}`, class: 'magnet-grp' });
+      mG.appendChild(el('rect', { x: -MW/2, y: -MH/2, width: MW/2, height: MH, rx: '4', fill: '#1d4ed8' }));
+      mG.appendChild(el('rect', { x: 0,     y: -MH/2, width: MW/2, height: MH, rx: '4', fill: '#dc2626' }));
+      txt(mG, 'S', { x: -MW/4, y: '6', 'text-anchor': 'middle', 'font-size': '14', 'font-weight': '800', fill: 'white' });
+      txt(mG, 'N', { x:  MW/4, y: '6', 'text-anchor': 'middle', 'font-size': '14', 'font-weight': '800', fill: 'white' });
+      svg.appendChild(mG);
+    }
+
+    // ── 씬 업데이트 ─────────────────────────────────────────────────
+    function updateScene(sid, N, mx, vel, cur) {
+      const svg = document.getElementById('scene' + sid);
+      if (!svg) return;
+
+      // 자석 이동
+      svg.querySelector(`#mag${sid}`).setAttribute('transform', `translate(${mx.toFixed(1)},${SCY})`);
+
+      // 검류계 바늘
+      const nd = svg.querySelector(`#nd${sid}`);
+      if (nd) {
+        const angle = Math.max(-75, Math.min(75, cur * 75));
+        const rad = (angle - 90) * Math.PI / 180;
+        const len = GR - 14;
+        nd.setAttribute('x2', (GCX + len * Math.cos(rad)).toFixed(1));
+        nd.setAttribute('y2', (GCY + len * Math.sin(rad)).toFixed(1));
       }
 
-      function placeMagnet(ratio) {
-        magnet.style.left = `${xFromRatio(ratio)}px`;
-      }
+      // 자기장선
+      updateFieldLines(svg, sid, mx, cur);
 
-      function setNeedle(angle) {
-        needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-      }
+      // 전류 도트
+      updateDots(svg, sid, N, cur);
+    }
 
-      function setActiveButton(key) {
-        scenarioButtons.forEach((button) => {
-          const active = button.dataset.scenario === key;
-          button.className = active
-            ? "scenario rounded-md border border-rose-700 bg-rose-700 px-3 py-2 text-sm font-semibold text-white"
-            : "scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500";
-        });
-      }
+    function updateFieldLines(svg, sid, mx, cur) {
+      const flux = fluxMag(mx);
+      const positive = cur >= 0;
+      const lineCol = positive ? '#dc2626' : '#2563eb';
+      const markerR = `url(#arr${sid})`;
+      const markerB = `url(#arb${sid})`;
+      const marker = positive ? markerR : markerB;
 
-      function updateFluxVisual(flux, level, active) {
-        fluxState.textContent = flux;
-        fluxLabel.textContent = `코일 안 자기장: ${flux}`;
-        fluxWindow.style.backgroundColor = active ? "rgb(254 205 211 / 0.28)" : "rgb(253 230 138 / 0.12)";
-        fluxLines.forEach((line, index) => {
-          const weight = index === 1 ? 1 : 0.75;
-          line.style.opacity = `${Math.max(0.18, level * weight)}`;
-          line.style.strokeWidth = `${2 + level * (index === 1 ? 5 : 3)}`;
-          line.style.stroke = flux === "감소" ? "#2563eb" : "#dc2626";
-        });
-      }
-
-      function updateReadout({ state, strength, direction, flux, fluxLevel, note, active }) {
-        stateText.textContent = state;
-        currentStrength.textContent = strength;
-        currentDirection.textContent = direction;
-        observation.textContent = note;
-        currentBadge.textContent = state;
-        fieldPulse.classList.toggle("hidden", !active);
-        updateFluxVisual(flux, fluxLevel, active);
-      }
-
-      function stopAnimation() {
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        }
-        startTime = null;
-      }
-
-      function finishScenario(scenario) {
-        setNeedle(0);
-        fieldPulse.classList.add("hidden");
-        currentStrength.textContent = "0";
-        currentDirection.textContent = "없음";
-        updateFluxVisual("변화 없음", 0.45, false);
-        stateText.textContent = scenario.endText;
-        currentBadge.textContent = scenario.endText;
-      }
-
-      function runScenario(key) {
-        stopAnimation();
-        selectedScenario = scenarios[key];
-        setActiveButton(key);
-
-        if (!selectedScenario.moving) {
-          placeMagnet(selectedScenario.to);
-          setNeedle(0);
-          updateReadout({
-            state: selectedScenario.activeText,
-            strength: selectedScenario.strength,
-            direction: selectedScenario.direction,
-            flux: selectedScenario.flux,
-            fluxLevel: selectedScenario.fluxLevel,
-            note: selectedScenario.note,
-            active: false,
+      // 내부 자기장선
+      const ifG = svg.querySelector(`#if${sid}`);
+      ifG.innerHTML = '';
+      if (flux > 0.06) {
+        for (let i = -1; i <= 1; i++) {
+          const y = SCY + i * 11;
+          const op = (flux * (i === 0 ? 0.9 : 0.55)).toFixed(2);
+          const line = el('line', {
+            x1: SL + 16, y1: y, x2: SR - 16, y2: y,
+            stroke: lineCol, 'stroke-width': i === 0 ? '2' : '1.5',
+            opacity: op, 'marker-end': marker
           });
-          return;
+          ifG.appendChild(line);
         }
+      }
 
-        placeMagnet(selectedScenario.from);
-        updateReadout({
-          state: selectedScenario.activeText,
-          strength: selectedScenario.strength,
-          direction: selectedScenario.direction,
-          flux: selectedScenario.flux,
-          fluxLevel: selectedScenario.fluxLevel,
-          note: selectedScenario.note,
-          active: true,
+      // 외부 자기장 루프
+      const efG = svg.querySelector(`#ef${sid}`);
+      efG.innerHTML = '';
+      if (flux > 0.12) {
+        const ext = flux * 0.75;
+        const h = 44 + flux * 46; // 루프 높이
+        const loopAttrs = {
+          fill: 'none', stroke: lineCol, 'stroke-width': '1.8',
+          opacity: (ext).toFixed(2), 'stroke-dasharray': '5,3'
+        };
+        // 상단 루프
+        efG.appendChild(el('path', { ...loopAttrs,
+          d: `M ${SL} ${SCY-CRY} Q ${SL-28} ${SCY-CRY-h} ${(SL+SR)/2} ${SCY-CRY-h} Q ${SR+28} ${SCY-CRY-h} ${SR} ${SCY-CRY}`
+        }));
+        // 하단 루프
+        efG.appendChild(el('path', { ...loopAttrs,
+          d: `M ${SL} ${SCY+CRY} Q ${SL-28} ${SCY+CRY+h} ${(SL+SR)/2} ${SCY+CRY+h} Q ${SR+28} ${SCY+CRY+h} ${SR} ${SCY+CRY}`
+        }));
+      }
+    }
+
+    function helixPt(t, N) {
+      const tt = ((t % 1) + 1) % 1;
+      const theta = tt * 2 * Math.PI * N;
+      return {
+        x: SL + tt * SW,
+        y: SCY + CRYO * Math.sin(theta),
+        front: Math.sin(theta) <= 0 // sin≤0 → y≤SCY → 위쪽 = 앞면
+      };
+    }
+
+    function updateDots(svg, sid, N, cur) {
+      const absCur = Math.abs(cur);
+      const speed = absCur * 0.013;
+      const dir = cur >= 0 ? 1 : -1;
+      const ph = phases[sid - 1];
+
+      for (let i = 0; i < NDOTS; i++) {
+        ph[i] = ((ph[i] + speed * dir) % 1 + 1) % 1;
+        const dot = svg.querySelector(`#dot${sid}x${i}`);
+        if (!dot) continue;
+        const p = helixPt(ph[i], N);
+        dot.setAttribute('cx', p.x.toFixed(1));
+        dot.setAttribute('cy', p.y.toFixed(1));
+        if (absCur < 0.02) {
+          dot.setAttribute('opacity', '0');
+        } else {
+          dot.setAttribute('opacity', p.front ? (absCur * 0.9).toFixed(2) : (absCur * 0.25).toFixed(2));
+          dot.setAttribute('r', p.front ? '5' : '3');
+        }
+      }
+    }
+
+    // ── 그래프 ──────────────────────────────────────────────────────
+    function drawGraph(canvasId, curColor, label) {
+      const c = document.getElementById(canvasId);
+      if (!c || !c.parentElement) return;
+      const W = c.parentElement.clientWidth || 700;
+      if (c.width !== W) c.width = W;
+      const H = c.height;
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#fafafa';
+      ctx.fillRect(0, 0, W, H);
+
+      // 영점 선
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+      // 레이블
+      ctx.fillStyle = '#d1d5db';
+      ctx.font = '10px sans-serif';
+      ctx.fillText(label, 4, 14);
+      ctx.fillText('시간 →', W - 52, H - 4);
+
+      const curIdx = canvasId === 'graph1' ? 1 : 2;
+
+      function line(getV, color, lw) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lw;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        for (let i = 0; i < GBUF; i++) {
+          const idx = (bHead + i) % GBUF;
+          const v = getV(idx);
+          const x = (i / (GBUF - 1)) * W;
+          const y = H / 2 - v * (H / 2 - 6);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      line(i => buf[i * 3],         '#94a3b8', 2);   // 속도 (slate)
+      line(i => buf[i * 3 + curIdx - 1 + 1], curColor, 2.5); // 전류
+    }
+
+    // ── 프리셋 ──────────────────────────────────────────────────────
+    const presetDefs = {
+      slow:  { dur: 4200, fn: t => 0.5 - 0.5 * Math.cos(2 * Math.PI * t) },
+      fast:  { dur: 1600, fn: t => 0.5 - 0.5 * Math.cos(2 * Math.PI * t) },
+      accel: {
+        dur: 3000,
+        fn: t => t < 0.45
+          ? (t / 0.45) * (t / 0.45)               // 등가속 (가속 왕복)
+          : (1 - (t - 0.45) / 0.55) * (1 - (t - 0.45) / 0.55) // 감속 귀환
+      }
+    };
+
+    function startPreset(name) {
+      magX = XMIN + 10;
+      prevMagX = magX;
+      smoothVel = 0;
+      const def = presetDefs[name];
+      preset = { def, startT: null };
+    }
+
+    function tickPreset(ts) {
+      if (!preset) return;
+      if (!preset.startT) preset.startT = ts;
+      const t = Math.min((ts - preset.startT) / preset.def.dur, 1);
+      const ratio = preset.def.fn(t);
+      magX = XMIN + 10 + (XMAX - XMIN - 20) * ratio;
+      if (t >= 1) { preset = null; setActivePreset(null); }
+    }
+
+    function setActivePreset(name) {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        const active = btn.dataset.preset === name;
+        btn.className = active
+          ? 'preset-btn rounded-md bg-sky-700 px-3 py-2 text-sm font-semibold text-white'
+          : 'preset-btn rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-400';
+      });
+    }
+
+    // ── 드래그 ──────────────────────────────────────────────────────
+    function svgXfrom(e, svgEl) {
+      const rect = svgEl.getBoundingClientRect();
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      return (cx - rect.left) / rect.width * 800;
+    }
+
+    function initDrag(svgId) {
+      const svg = document.getElementById(svgId);
+      const mG = svg.querySelector('.magnet-grp');
+      if (!mG) return;
+
+      const onDown = e => {
+        preset = null;
+        setActivePreset(null);
+        drag = { startSvgX: svgXfrom(e, svg), startMagX: magX };
+        e.preventDefault();
+      };
+      mG.addEventListener('mousedown', onDown);
+      mG.addEventListener('touchstart', onDown, { passive: false });
+    }
+
+    window.addEventListener('mousemove', e => {
+      if (!drag) return;
+      const svg = document.getElementById('scene1');
+      const dx = svgXfrom(e, svg) - drag.startSvgX;
+      magX = Math.max(XMIN, Math.min(XMAX, drag.startMagX + dx));
+    });
+    window.addEventListener('touchmove', e => {
+      if (!drag) return;
+      const svg = document.getElementById('scene1');
+      const dx = svgXfrom(e, svg) - drag.startSvgX;
+      magX = Math.max(XMIN, Math.min(XMAX, drag.startMagX + dx));
+      e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('mouseup', () => { drag = null; });
+    window.addEventListener('touchend', () => { drag = null; });
+
+    // ── 메인 루프 ───────────────────────────────────────────────────
+    function frame(ts) {
+      const dt = Math.min(ts - lastT, 80);
+      lastT = ts;
+
+      tickPreset(ts);
+
+      // 속도 계산 (정규화, 픽셀/ms → -1..1)
+      const rawV = dt > 0 ? (magX - prevMagX) / dt : 0;
+      smoothVel = smoothVel * 0.65 + rawV * 0.35;
+      prevMagX = magX;
+      const normV = Math.max(-1, Math.min(1, smoothVel));
+
+      const cur1 = calcCurrent(normV, magX, N1);
+      const cur2 = calcCurrent(normV, magX, N2);
+
+      // 씬 업데이트
+      updateScene(1, N1, magX, normV, cur1);
+      if (comparing) updateScene(2, N2, magX, normV, cur2);
+
+      // 그래프 버퍼
+      if (ts - lastBufT > 16) {
+        buf[bHead * 3]     = normV;
+        buf[bHead * 3 + 1] = cur1;
+        buf[bHead * 3 + 2] = cur2;
+        bHead = (bHead + 1) % GBUF;
+        lastBufT = ts;
+      }
+
+      drawGraph('graph1', '#f97316', '코일 5회');
+      if (comparing) drawGraph('graph2', '#8b5cf6', '코일 10회');
+
+      requestAnimationFrame(frame);
+    }
+
+    // ── 초기화 ──────────────────────────────────────────────────────
+    function init() {
+      buildScene('scene1', N1, 1);
+      buildScene('scene2', N2, 2);
+      initDrag('scene1');
+      initDrag('scene2');
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setActivePreset(btn.dataset.preset);
+          startPreset(btn.dataset.preset);
         });
-        setNeedle(selectedScenario.angle);
-
-        animationId = requestAnimationFrame(step);
-      }
-
-      function step(timestamp) {
-        if (!startTime) {
-          startTime = timestamp;
-        }
-
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / selectedScenario.duration, 1);
-        const eased = progress < 0.5
-          ? 2 * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-        const ratio = selectedScenario.from + (selectedScenario.to - selectedScenario.from) * eased;
-        const wiggle = Math.sin(progress * Math.PI * 8) * Math.abs(selectedScenario.angle) * 0.08;
-
-        placeMagnet(ratio);
-        setNeedle(selectedScenario.angle + wiggle);
-
-        if (progress < 1) {
-          animationId = requestAnimationFrame(step);
-          return;
-        }
-
-        animationId = null;
-        startTime = null;
-        finishScenario(selectedScenario);
-      }
-
-      scenarioButtons.forEach((button) => {
-        button.addEventListener("click", () => runScenario(button.dataset.scenario));
       });
 
-      window.addEventListener("resize", () => {
-        const scenario = selectedScenario || scenarios.near;
-        placeMagnet(scenario.to);
+      document.getElementById('btnReset').addEventListener('click', () => {
+        preset = null;
+        drag = null;
+        magX = XMIN + 10;
+        prevMagX = magX;
+        smoothVel = 0;
+        buf.fill(0);
+        bHead = 0;
+        phases[0].forEach((_, i, a) => { a[i] = i / NDOTS; });
+        phases[1].forEach((_, i, a) => { a[i] = i / NDOTS; });
+        setActivePreset(null);
       });
 
-      runScenario("near");
+      document.getElementById('btnCompare').addEventListener('click', () => {
+        comparing = !comparing;
+        document.getElementById('wrap2').classList.toggle('hidden', !comparing);
+        document.getElementById('gwrap2').classList.toggle('hidden', !comparing);
+        document.getElementById('leg2').classList.toggle('hidden', !comparing);
+        document.getElementById('leg2').classList.toggle('flex', comparing);
+        const btn = document.getElementById('btnCompare');
+        btn.textContent = comparing ? '비교 숨기기 ↑' : '코일 비교 보기 ↓';
+        btn.classList.toggle('bg-rose-100', comparing);
+      });
+
+      lastT = performance.now();
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
     </script>
   </body>
 </html>
