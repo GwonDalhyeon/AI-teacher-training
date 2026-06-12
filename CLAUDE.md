@@ -30,18 +30,23 @@ Core participant files:
 - 강사: 권달현
 - 교과: 수학
 - 수학 웹앱은 `math-webapps` 별도 프로젝트에서 제작한다.
-- 이 저장소의 웹앱은 여러 교과 교사가 볼 수 있는 Block 4 시연용 과학 웹앱이다.
+- 이 저장소의 웹앱은 여러 교과 교사가 볼 수 있는 Block 4 시연용 교과별 웹앱 갤러리다.
 
 ## Current State
 
 최종 상태 기준일: 2026-06-12
 
-현재 핵심 웹앱 2개는 구현, 커밋, 푸시, GitHub Pages 배포 확인까지 완료된 상태다.
+현재 과학 계열 핵심 웹앱 2개는 구현, 커밋, 푸시, GitHub Pages 배포 확인까지 완료된 상태다. 문과 계열 웹앱 5개는 로컬 구현과 수업효과 검토를 통과했으며, 커밋·푸시와 Pages 배포 확인이 남아 있다.
 
 | Target | Subject | State | Core idea |
 |--------|---------|-------|-----------|
 | `webapps/horizontal-projectile/index.html` | 통합과학1 | 완료·배포 | 수평 속력이 달라도 같은 높이에서 출발하면 낙하 시간은 같다 |
 | `webapps/electromagnetic-induction/index.html` | 통합과학2 | 완료·배포 | 가까이 있음이 아니라 자기장 변화가 전류를 만든다 |
+| `webapps/heat-vulnerability-map/index.html` | 도시의 미래탐구 | 로컬 완료 | 취약성이 겹치면 우선 지원 지역이 달라진다 |
+| `webapps/contract-validity-checker/index.html` | 법과 사회 | 로컬 완료 | 계약은 서명보다 의사 합치와 효력 요건을 따지는 과정이다 |
+| `webapps/smart-city-balance/index.html` | 도시의 미래탐구 | 로컬 완료 | 스마트 도시는 기술 총량보다 공공성과 참여의 균형 문제다 |
+| `webapps/city-budget-for-all/index.html` | 도시의 미래탐구 | 로컬 완료 | 예산 선택은 누가 반영되고 미뤄지는지를 바꾼다 |
+| `webapps/inheritance-family-tree/index.html` | 법과 사회 | 로컬 완료 | 상속은 순위, 배우자 지위, 채무 조건이 함께 작동한다 |
 
 Deployment URLs:
 
@@ -82,16 +87,23 @@ Before making substantive changes, check these files in order:
 | `lecture/연수자_자료.md` | 참여자 자료 |
 | `slides/PPT_원고.md` | PPT 제작 원고 |
 | `lecture/강사용_원고.md` | 강사용 원고 |
+| `webapps/index.html` | 교과별 웹앱 갤러리 허브 |
 | `webapps/horizontal-projectile/index.html` | 수평 투사 운동 시연 앱 |
 | `webapps/electromagnetic-induction/index.html` | 전자기 유도 시연 앱 |
+| `webapps/heat-vulnerability-map/index.html` | 폭염 취약 지역 커뮤니티 매핑 앱 |
+| `webapps/contract-validity-checker/index.html` | 계약 성립·효력 판단기 앱 |
+| `webapps/smart-city-balance/index.html` | 스마트 도시 균형 실험실 앱 |
+| `webapps/city-budget-for-all/index.html` | 모두를 위한 도시 예산 배분 앱 |
+| `webapps/inheritance-family-tree/index.html` | 상속 관계 가계도 시뮬레이터 앱 |
 
 ## Next Work
 
 현재 웹앱 제작 자체는 완료되었다. 다음 작업은 새 기능 제작보다 연수 현장 연결과 검수에 가깝다.
 
-- Block 4에서 두 웹앱을 1-2분씩 시연하는 흐름 점검
-- `webapps/index.html` 목록 페이지 문구와 순서 다듬기
-- `slides/PPT_원고.md`, `lecture/강사용_원고.md`, `lecture/연수자_자료.md`에 Pages URL 또는 QR 안내 연결
+- Block 2의 ChatGPT 프로젝트 생성, Layer 1 프로젝트 지침 붙여넣기, Layer 2 파일 업로드 과정이 모든 자료에 유지되는지 점검
+- Block 4에서 `webapps/index.html` 갤러리 소개 + 대표 사례 3개 압축 시연 흐름 점검
+- `slides/PPT_원고.md`, `lecture/강사용_원고.md`, `lecture/연수자_자료.md`에 갤러리 URL 또는 QR 안내 연결
+- 문과 계열 웹앱 5개 커밋·푸시와 Pages 배포 확인
 - 빔프로젝터, 모바일, 학교 네트워크, Tailwind CDN 차단 가능성 최종 확인
 
 ## Web App Rules
