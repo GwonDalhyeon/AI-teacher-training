@@ -1,5 +1,8 @@
 # Large or restricted reference materials
 source/*.pdf
+*.hwp
+*.hwpx
+manifest.jsonl
 
 # Generated exports
 exports/*.pdf
@@ -11,4 +14,3 @@ exports/*.zip
 Thumbs.db
 *.tmp
 *.bak
-

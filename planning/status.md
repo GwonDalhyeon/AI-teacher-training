@@ -41,7 +41,7 @@
 
 ### 수학 웹앱 (별도 프로젝트)
 
-- 위치: `D:\Projects\math-webapps\probability-statistics\sample-proportion-event-readiness\`
+- 위치: `math-webapps/probability-statistics/sample-proportion-event-readiness/` 별도 저장소
 - Block 4 시연의 핵심 앱. 이 프로젝트에서는 수정하지 않음.
 
 ---
