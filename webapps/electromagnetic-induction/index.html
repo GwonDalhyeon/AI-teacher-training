@@ -15,6 +15,15 @@
         animation: fieldPulse 1200ms ease-out infinite;
       }
 
+      .flux-line {
+        stroke-linecap: round;
+        transition: opacity 180ms ease-out, stroke-width 180ms ease-out;
+      }
+
+      .arrow {
+        transition: opacity 180ms ease-out, transform 180ms ease-out;
+      }
+
       @keyframes fieldPulse {
         0% {
           transform: scale(0.82);
@@ -52,8 +61,20 @@
               가까이 있음보다 움직임이 중요함
             </div>
 
+            <svg class="absolute inset-0 h-full w-full" aria-hidden="true" viewBox="0 0 720 430" preserveAspectRatio="none">
+              <defs>
+                <marker id="arrowHead" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+                  <path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"></path>
+                </marker>
+              </defs>
+              <path id="fluxLineTop" class="flux-line" d="M126 170 C245 135, 358 135, 494 170" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowHead)" opacity="0.25"></path>
+              <path id="fluxLineMid" class="flux-line" d="M122 216 C250 216, 370 216, 500 216" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#arrowHead)" opacity="0.35"></path>
+              <path id="fluxLineBottom" class="flux-line" d="M126 262 C245 297, 358 297, 494 262" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowHead)" opacity="0.25"></path>
+              <text id="fluxLabel" x="354" y="118" text-anchor="middle" fill="#9f1239" font-size="15" font-weight="700">코일 안 자기장: 변화 없음</text>
+            </svg>
+
             <div class="absolute left-[50%] top-[52%] h-44 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-[12px] border-amber-700 bg-amber-100/20 shadow-inner"></div>
-            <div class="absolute left-[50%] top-[52%] h-56 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-500/30"></div>
+            <div id="fluxWindow" class="absolute left-[50%] top-[52%] h-56 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-500/30 bg-amber-200/10"></div>
             <div id="fieldPulse" class="field-ring absolute left-[50%] top-[52%] hidden h-64 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-rose-400"></div>
 
             <div id="magnet" class="absolute top-[52%] flex h-20 w-36 -translate-y-1/2 overflow-hidden rounded-md border border-zinc-800 shadow-lg">
@@ -108,10 +129,14 @@
                 <dd id="currentDirection" class="mt-1 text-xl font-bold">없음</dd>
               </div>
             </div>
+            <div class="rounded-md bg-zinc-50 p-3">
+              <dt class="font-semibold text-zinc-600">코일 안 자기장</dt>
+              <dd id="fluxState" class="mt-1 text-xl font-bold">변화 없음</dd>
+            </div>
             <div class="rounded-md bg-amber-50 p-3">
               <dt class="font-semibold text-amber-800">관찰 포인트</dt>
               <dd id="observation" class="mt-1 leading-6 text-zinc-700">
-                자석이 멈춰 있으면 가까이 있어도 전류는 0입니다.
+                자석이 멈춰 있으면 코일 안 자기장이 변하지 않아 전류는 0입니다.
               </dd>
             </div>
           </dl>
@@ -124,10 +149,18 @@
       const magnet = document.getElementById("magnet");
       const needle = document.getElementById("needle");
       const fieldPulse = document.getElementById("fieldPulse");
+      const fluxWindow = document.getElementById("fluxWindow");
+      const fluxLabel = document.getElementById("fluxLabel");
+      const fluxLines = [
+        document.getElementById("fluxLineTop"),
+        document.getElementById("fluxLineMid"),
+        document.getElementById("fluxLineBottom"),
+      ];
       const currentBadge = document.getElementById("currentBadge");
       const stateText = document.getElementById("stateText");
       const currentStrength = document.getElementById("currentStrength");
       const currentDirection = document.getElementById("currentDirection");
+      const fluxState = document.getElementById("fluxState");
       const observation = document.getElementById("observation");
       const scenarioButtons = [...document.querySelectorAll(".scenario")];
 
@@ -142,7 +175,9 @@
           direction: "없음",
           activeText: "자석이 가까이 있지만 멈춰 있음",
           endText: "정지 상태",
-          note: "자석이 가까이 있어도 자기장이 변하지 않으면 전류는 흐르지 않습니다.",
+          flux: "변화 없음",
+          fluxLevel: 0.35,
+          note: "자석이 가까이 있어도 코일 안 자기장이 변하지 않으면 전류는 흐르지 않습니다.",
           moving: false,
         },
         slowIn: {
@@ -155,7 +190,9 @@
           direction: "오른쪽",
           activeText: "자석이 천천히 들어가는 중",
           endText: "자석 정지, 전류 0",
-          note: "움직이는 동안만 약한 전류가 생기고, 멈추면 다시 0이 됩니다.",
+          flux: "천천히 증가",
+          fluxLevel: 0.62,
+          note: "자석이 들어가는 동안 코일 안 자기장이 증가합니다. 움직임이 멈추면 전류도 0이 됩니다.",
           moving: true,
         },
         fastIn: {
@@ -168,7 +205,9 @@
           direction: "오른쪽",
           activeText: "자석이 빠르게 들어가는 중",
           endText: "자석 정지, 전류 0",
-          note: "더 빠르게 움직이면 자기장이 더 빨리 변해 전류계가 더 크게 흔들립니다.",
+          flux: "빠르게 증가",
+          fluxLevel: 0.9,
+          note: "더 빠르게 움직이면 코일 안 자기장이 더 빨리 변해 전류계가 더 크게 흔들립니다.",
           moving: true,
         },
         out: {
@@ -181,7 +220,9 @@
           direction: "왼쪽",
           activeText: "자석을 빼는 중",
           endText: "자석 정지, 전류 0",
-          note: "자석을 반대로 움직이면 전류계 바늘도 반대 방향으로 움직입니다.",
+          flux: "감소",
+          fluxLevel: 0.58,
+          note: "자석을 빼면 코일 안 자기장이 줄어듭니다. 변화 방향이 바뀌어 전류계도 반대로 움직입니다.",
           moving: true,
         },
       };
@@ -211,13 +252,26 @@
         });
       }
 
-      function updateReadout({ state, strength, direction, note, active }) {
+      function updateFluxVisual(flux, level, active) {
+        fluxState.textContent = flux;
+        fluxLabel.textContent = `코일 안 자기장: ${flux}`;
+        fluxWindow.style.backgroundColor = active ? "rgb(254 205 211 / 0.28)" : "rgb(253 230 138 / 0.12)";
+        fluxLines.forEach((line, index) => {
+          const weight = index === 1 ? 1 : 0.75;
+          line.style.opacity = `${Math.max(0.18, level * weight)}`;
+          line.style.strokeWidth = `${2 + level * (index === 1 ? 5 : 3)}`;
+          line.style.stroke = flux === "감소" ? "#2563eb" : "#dc2626";
+        });
+      }
+
+      function updateReadout({ state, strength, direction, flux, fluxLevel, note, active }) {
         stateText.textContent = state;
         currentStrength.textContent = strength;
         currentDirection.textContent = direction;
         observation.textContent = note;
         currentBadge.textContent = state;
         fieldPulse.classList.toggle("hidden", !active);
+        updateFluxVisual(flux, fluxLevel, active);
       }
 
       function stopAnimation() {
@@ -233,6 +287,7 @@
         fieldPulse.classList.add("hidden");
         currentStrength.textContent = "0";
         currentDirection.textContent = "없음";
+        updateFluxVisual("변화 없음", 0.45, false);
         stateText.textContent = scenario.endText;
         currentBadge.textContent = scenario.endText;
       }
@@ -249,6 +304,8 @@
             state: selectedScenario.activeText,
             strength: selectedScenario.strength,
             direction: selectedScenario.direction,
+            flux: selectedScenario.flux,
+            fluxLevel: selectedScenario.fluxLevel,
             note: selectedScenario.note,
             active: false,
           });
@@ -260,6 +317,8 @@
           state: selectedScenario.activeText,
           strength: selectedScenario.strength,
           direction: selectedScenario.direction,
+          flux: selectedScenario.flux,
+          fluxLevel: selectedScenario.fluxLevel,
           note: selectedScenario.note,
           active: true,
         });
