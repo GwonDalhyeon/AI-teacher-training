@@ -46,8 +46,8 @@ Source: `04dc80ab9d_AI로_내_수업_비서_만들기.md`
 | `slides/PPT_원고.md` | 완성 (36슬라이드) |
 | `lecture/강사용_원고.md` | 완성 ([강사 메모] 블록 포함) |
 | `lecture/수정_강의록.md` | 스텁 — 삼문서 방식으로 대체됨, 삭제 가능 |
-| `webapps/수평투사/index.html` | 제작 필요 |
-| `webapps/전자기유도/index.html` | 제작 필요 |
+| `webapps/horizontal-projectile/index.html` | 제작 필요 |
+| `webapps/electromagnetic-induction/index.html` | 제작 필요 |
 
 현황 상세 및 남은 작업 명세: `planning/status.md` 참고
 
