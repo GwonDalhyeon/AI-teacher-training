@@ -5,61 +5,305 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>전자기 유도</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .meter-needle {
+        transform-origin: 50% 90%;
+        transition: transform 160ms ease-out;
+      }
+
+      .field-ring {
+        animation: fieldPulse 1200ms ease-out infinite;
+      }
+
+      @keyframes fieldPulse {
+        0% {
+          transform: scale(0.82);
+          opacity: 0.55;
+        }
+        100% {
+          transform: scale(1.16);
+          opacity: 0;
+        }
+      }
+    </style>
   </head>
-  <body class="min-h-screen bg-zinc-50 text-zinc-950">
-    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-6 sm:px-8">
+  <body class="min-h-screen overflow-x-hidden bg-rose-50 text-zinc-950">
+    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
       <header class="mb-5">
-        <p class="text-sm font-semibold text-rose-700">통합과학2 시연</p>
-        <h1 class="mt-1 text-3xl font-bold tracking-normal sm:text-4xl">전자기 유도</h1>
+        <div class="flex flex-wrap items-center gap-2">
+          <a class="text-sm font-semibold text-rose-700 hover:text-rose-900" href="../">연수 시연용 웹앱</a>
+          <span class="text-sm text-zinc-400">/</span>
+          <p class="text-sm font-semibold text-rose-700">통합과학2</p>
+        </div>
+        <h1 class="mt-2 text-3xl font-bold tracking-normal sm:text-4xl">전자기 유도</h1>
         <p class="mt-3 max-w-3xl text-base leading-7 text-zinc-700">
           자석이 가까이 있기만 하면 전류가 흐를 것 같지만, 전류는 자석이 움직이며 자기장이 변할 때 생깁니다.
         </p>
       </header>
 
-      <section class="grid flex-1 gap-4 lg:grid-cols-[1fr_320px]">
-        <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-          <div class="relative h-[420px] overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-b from-white to-rose-50">
-            <div class="absolute left-1/2 top-1/2 h-40 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-[10px] border-amber-600"></div>
-            <div class="absolute left-[18%] top-1/2 flex h-20 w-36 -translate-y-1/2 overflow-hidden rounded-md border border-zinc-700 shadow">
+      <section class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <div class="rounded-lg border border-rose-200 bg-white p-3 shadow-sm sm:p-4">
+          <div
+            id="scene"
+            class="relative h-[430px] min-h-[360px] overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-b from-white via-rose-50 to-white"
+            aria-label="전자기 유도 시각화"
+          >
+            <div class="absolute left-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs font-semibold text-zinc-600 shadow-sm sm:text-sm">
+              가까이 있음보다 움직임이 중요함
+            </div>
+
+            <div class="absolute left-[50%] top-[52%] h-44 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-[12px] border-amber-700 bg-amber-100/20 shadow-inner"></div>
+            <div class="absolute left-[50%] top-[52%] h-56 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-500/30"></div>
+            <div id="fieldPulse" class="field-ring absolute left-[50%] top-[52%] hidden h-64 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-rose-400"></div>
+
+            <div id="magnet" class="absolute top-[52%] flex h-20 w-36 -translate-y-1/2 overflow-hidden rounded-md border border-zinc-800 shadow-lg">
               <div class="flex flex-1 items-center justify-center bg-red-600 text-xl font-bold text-white">N</div>
               <div class="flex flex-1 items-center justify-center bg-blue-700 text-xl font-bold text-white">S</div>
             </div>
-            <div class="absolute right-12 top-16 h-28 w-28 rounded-full border-4 border-zinc-700 bg-white">
-              <div class="absolute left-1/2 top-1/2 h-12 w-1 origin-bottom -translate-x-1/2 -translate-y-full rotate-0 rounded bg-rose-600"></div>
-              <div class="absolute bottom-5 left-0 right-0 text-center text-xs font-bold text-zinc-600">전류계</div>
+
+            <div class="absolute right-3 top-16 h-24 w-24 rounded-full border-4 border-zinc-800 bg-white shadow-sm sm:right-10 sm:h-32 sm:w-32">
+              <div class="absolute left-1/2 top-[18px] h-2 w-2 -translate-x-1/2 rounded-full bg-zinc-800"></div>
+              <div class="absolute bottom-[28px] left-1/2 h-[46px] w-1 -translate-x-1/2 rounded bg-zinc-300 sm:bottom-[34px] sm:h-[62px]"></div>
+              <div id="needle" class="meter-needle absolute bottom-[28px] left-1/2 h-[46px] w-1 -translate-x-1/2 rounded bg-rose-600 sm:bottom-[34px] sm:h-[62px]"></div>
+              <div class="absolute bottom-4 left-0 right-0 text-center text-[11px] font-bold text-zinc-600 sm:bottom-5 sm:text-xs">전류계</div>
+              <div class="absolute bottom-9 left-4 text-[11px] font-bold text-blue-700 sm:bottom-11 sm:left-5 sm:text-xs">-</div>
+              <div class="absolute bottom-9 right-4 text-[11px] font-bold text-red-700 sm:bottom-11 sm:right-5 sm:text-xs">+</div>
             </div>
-            <div class="absolute left-6 bottom-4 text-sm font-semibold text-zinc-600">시각화 영역</div>
-            <div class="absolute right-5 bottom-5 rounded-md bg-white/85 px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm">
-              구현 예정: 움직일 때만 전류계 반응
+
+            <div id="currentBadge" class="absolute bottom-4 left-4 right-4 rounded-md bg-white/90 px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm">
+              자석을 움직이면 전류계가 반응합니다.
             </div>
           </div>
         </div>
 
         <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
           <h2 class="text-lg font-bold">시연 조작</h2>
-          <div class="mt-4 grid gap-2">
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">가까이 두기</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">천천히 넣기</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">빠르게 넣기</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">빼기</button>
+          <div class="mt-4 grid gap-2" role="group" aria-label="자석 움직임 선택">
+            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="near">
+              가까이 두기
+            </button>
+            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="slowIn">
+              천천히 넣기
+            </button>
+            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="fastIn">
+              빠르게 넣기
+            </button>
+            <button class="scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500" type="button" data-scenario="out">
+              빼기
+            </button>
           </div>
 
           <dl class="mt-5 space-y-3 text-sm">
             <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">자석이 멈춰 있을 때</dt>
-              <dd class="mt-1 text-xl font-bold">전류 0</dd>
+              <dt class="font-semibold text-zinc-600">현재 상태</dt>
+              <dd id="stateText" class="mt-1 text-xl font-bold">대기 중</dd>
             </div>
-            <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">자석이 움직일 때</dt>
-              <dd class="mt-1 text-xl font-bold">전류 발생</dd>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-md bg-rose-50 p-3">
+                <dt class="font-semibold text-rose-800">전류 세기</dt>
+                <dd id="currentStrength" class="mt-1 text-xl font-bold">0</dd>
+              </div>
+              <div class="rounded-md bg-blue-50 p-3">
+                <dt class="font-semibold text-blue-800">전류 방향</dt>
+                <dd id="currentDirection" class="mt-1 text-xl font-bold">없음</dd>
+              </div>
             </div>
-            <div class="rounded-md bg-rose-50 p-3">
-              <dt class="font-semibold text-rose-800">관찰 포인트</dt>
-              <dd class="mt-1 leading-6 text-zinc-700">가까움보다 변화가 중요합니다. 방향이 바뀌면 전류 방향도 바뀝니다.</dd>
+            <div class="rounded-md bg-amber-50 p-3">
+              <dt class="font-semibold text-amber-800">관찰 포인트</dt>
+              <dd id="observation" class="mt-1 leading-6 text-zinc-700">
+                자석이 멈춰 있으면 가까이 있어도 전류는 0입니다.
+              </dd>
             </div>
           </dl>
         </aside>
       </section>
     </main>
+
+    <script>
+      const scene = document.getElementById("scene");
+      const magnet = document.getElementById("magnet");
+      const needle = document.getElementById("needle");
+      const fieldPulse = document.getElementById("fieldPulse");
+      const currentBadge = document.getElementById("currentBadge");
+      const stateText = document.getElementById("stateText");
+      const currentStrength = document.getElementById("currentStrength");
+      const currentDirection = document.getElementById("currentDirection");
+      const observation = document.getElementById("observation");
+      const scenarioButtons = [...document.querySelectorAll(".scenario")];
+
+      const scenarios = {
+        near: {
+          label: "가까이 두기",
+          from: 0.36,
+          to: 0.43,
+          duration: 650,
+          angle: 0,
+          strength: "0",
+          direction: "없음",
+          activeText: "자석이 가까이 있지만 멈춰 있음",
+          endText: "정지 상태",
+          note: "자석이 가까이 있어도 자기장이 변하지 않으면 전류는 흐르지 않습니다.",
+          moving: false,
+        },
+        slowIn: {
+          label: "천천히 넣기",
+          from: 0.16,
+          to: 0.43,
+          duration: 2400,
+          angle: 24,
+          strength: "약함",
+          direction: "오른쪽",
+          activeText: "자석이 천천히 들어가는 중",
+          endText: "자석 정지, 전류 0",
+          note: "움직이는 동안만 약한 전류가 생기고, 멈추면 다시 0이 됩니다.",
+          moving: true,
+        },
+        fastIn: {
+          label: "빠르게 넣기",
+          from: 0.16,
+          to: 0.43,
+          duration: 1100,
+          angle: 48,
+          strength: "강함",
+          direction: "오른쪽",
+          activeText: "자석이 빠르게 들어가는 중",
+          endText: "자석 정지, 전류 0",
+          note: "더 빠르게 움직이면 자기장이 더 빨리 변해 전류계가 더 크게 흔들립니다.",
+          moving: true,
+        },
+        out: {
+          label: "빼기",
+          from: 0.43,
+          to: 0.16,
+          duration: 1500,
+          angle: -38,
+          strength: "중간",
+          direction: "왼쪽",
+          activeText: "자석을 빼는 중",
+          endText: "자석 정지, 전류 0",
+          note: "자석을 반대로 움직이면 전류계 바늘도 반대 방향으로 움직입니다.",
+          moving: true,
+        },
+      };
+
+      let animationId = null;
+      let startTime = null;
+      let selectedScenario = null;
+
+      function xFromRatio(ratio) {
+        return scene.clientWidth * ratio;
+      }
+
+      function placeMagnet(ratio) {
+        magnet.style.left = `${xFromRatio(ratio)}px`;
+      }
+
+      function setNeedle(angle) {
+        needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+      }
+
+      function setActiveButton(key) {
+        scenarioButtons.forEach((button) => {
+          const active = button.dataset.scenario === key;
+          button.className = active
+            ? "scenario rounded-md border border-rose-700 bg-rose-700 px-3 py-2 text-sm font-semibold text-white"
+            : "scenario rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-rose-500";
+        });
+      }
+
+      function updateReadout({ state, strength, direction, note, active }) {
+        stateText.textContent = state;
+        currentStrength.textContent = strength;
+        currentDirection.textContent = direction;
+        observation.textContent = note;
+        currentBadge.textContent = state;
+        fieldPulse.classList.toggle("hidden", !active);
+      }
+
+      function stopAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        startTime = null;
+      }
+
+      function finishScenario(scenario) {
+        setNeedle(0);
+        fieldPulse.classList.add("hidden");
+        currentStrength.textContent = "0";
+        currentDirection.textContent = "없음";
+        stateText.textContent = scenario.endText;
+        currentBadge.textContent = scenario.endText;
+      }
+
+      function runScenario(key) {
+        stopAnimation();
+        selectedScenario = scenarios[key];
+        setActiveButton(key);
+
+        if (!selectedScenario.moving) {
+          placeMagnet(selectedScenario.to);
+          setNeedle(0);
+          updateReadout({
+            state: selectedScenario.activeText,
+            strength: selectedScenario.strength,
+            direction: selectedScenario.direction,
+            note: selectedScenario.note,
+            active: false,
+          });
+          return;
+        }
+
+        placeMagnet(selectedScenario.from);
+        updateReadout({
+          state: selectedScenario.activeText,
+          strength: selectedScenario.strength,
+          direction: selectedScenario.direction,
+          note: selectedScenario.note,
+          active: true,
+        });
+        setNeedle(selectedScenario.angle);
+
+        animationId = requestAnimationFrame(step);
+      }
+
+      function step(timestamp) {
+        if (!startTime) {
+          startTime = timestamp;
+        }
+
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / selectedScenario.duration, 1);
+        const eased = progress < 0.5
+          ? 2 * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        const ratio = selectedScenario.from + (selectedScenario.to - selectedScenario.from) * eased;
+        const wiggle = Math.sin(progress * Math.PI * 8) * Math.abs(selectedScenario.angle) * 0.08;
+
+        placeMagnet(ratio);
+        setNeedle(selectedScenario.angle + wiggle);
+
+        if (progress < 1) {
+          animationId = requestAnimationFrame(step);
+          return;
+        }
+
+        animationId = null;
+        startTime = null;
+        finishScenario(selectedScenario);
+      }
+
+      scenarioButtons.forEach((button) => {
+        button.addEventListener("click", () => runScenario(button.dataset.scenario));
+      });
+
+      window.addEventListener("resize", () => {
+        const scenario = selectedScenario || scenarios.near;
+        placeMagnet(scenario.to);
+      });
+
+      runScenario("near");
+    </script>
   </body>
 </html>
