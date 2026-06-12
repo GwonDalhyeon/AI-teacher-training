@@ -16,8 +16,14 @@
   - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/contract-validity-checker/`
 - `smart-city-balance/`: 스마트 도시 균형 실험실 앱
   - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/smart-city-balance/`
+- `city-budget-for-all/`: 모두를 위한 도시 예산 배분 앱
+  - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/city-budget-for-all/`
+- `inheritance-family-tree/`: 상속 관계 가계도 시뮬레이터 앱
+  - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/inheritance-family-tree/`
 
 문과 계열 앱 3개는 `planning/humanities-webapp-work-orders/agent-workflow.md` 기준으로 수업효과 검토 에이전트가 상위 3개를 선별한 뒤 병렬 구현했고, 구현 후 사후 검토에서 모두 통과 판정을 받았다. 아직 커밋·푸시 후 Pages 배포 확인은 하지 않았다.
+
+이후 남은 후보 3개 중 `city-budget-for-all/`과 `inheritance-family-tree/`는 같은 절차로 구현하고 사후 검토를 통과했다. `youth-rights-age-lab/`은 최신 법령 기준표 검증 전까지 보류한다.
 
 ## 아이디어 보관
 

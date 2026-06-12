@@ -32,6 +32,12 @@
 - 폭염 취약 지역 커뮤니티 매핑: `webapps/heat-vulnerability-map/index.html`
 - 계약 성립·효력 판단기: `webapps/contract-validity-checker/index.html`
 - 스마트 도시 균형 실험실: `webapps/smart-city-balance/index.html`
+- 모두를 위한 도시 예산 배분: `webapps/city-budget-for-all/index.html`
+- 상속 관계 가계도 시뮬레이터: `webapps/inheritance-family-tree/index.html`
+
+보류 앱:
+
+- 청소년 권리와 제한 나이 경계 실험실: 최신 법령 기준표 검증과 쟁점 패널 재설계 후 구현
 
 ---
 
@@ -60,6 +66,9 @@
 - 구현 에이전트 3명이 상위 3개 웹앱을 각자 독립 폴더에 병렬 구현했다.
 - 구현 후 수업효과 검토 에이전트가 세 앱 모두 `통과` 판정을 냈다.
 - 조율 단계에서 `webapps/index.html`과 `webapps/README.md`에 문과 계열 앱 3개를 연결했다.
+- 남은 문과 계열 후보 3개를 재검토해 `모두를 위한 도시 예산 배분`과 `상속 관계 가계도 시뮬레이터`를 보완 후 구현 대상으로 확정하고 병렬 구현했다.
+- 구현 후 `상속 관계 가계도 시뮬레이터`는 바로 `통과`, `모두를 위한 도시 예산 배분`은 수정 요청 반영 후 `통과` 판정을 받았다.
+- `청소년 권리와 제한 나이 경계 실험실`은 법령 최신성 위험 때문에 보류했다. 구현 전 민법, 형법, 소년법, 근로기준법, 도로교통법, 주민등록법, 공직선거법, 청소년복지지원법 등 공식 기준표 확인이 필요하다.
 - `화법과 언어`는 작업지시서가 아니라 아하포인트가 생길 만한 주제 제안으로 정리했다. 위치: `planning/humanities-webapp-work-orders/korean-language-topic-proposals.md`
 - 사용자 피드백을 반영해 전자기 유도 앱의 초점을 오른손법칙이 아니라 "코일을 지나는 자기장 변화와 전류계 반응"으로 수정했다.
 
@@ -142,7 +151,11 @@ AI-teacher-training/
     │   └── index.html
     ├── contract-validity-checker/
     │   └── index.html
-    └── smart-city-balance/
+    ├── smart-city-balance/
+    │   └── index.html
+    ├── city-budget-for-all/
+    │   └── index.html
+    └── inheritance-family-tree/
         └── index.html
 ```
 
@@ -209,13 +222,15 @@ AI-teacher-training/
 
 ### 5순위: 문과 계열 웹앱 배포 확인
 
-로컬 구현과 수업효과 검토를 통과한 문과 계열 웹앱 3개를 커밋·푸시한 뒤 Pages에서 열리는지 확인한다.
+로컬 구현과 수업효과 검토를 통과한 문과 계열 웹앱 5개를 커밋·푸시한 뒤 Pages에서 열리는지 확인한다.
 
 확인할 URL:
 
 - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/heat-vulnerability-map/`
 - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/contract-validity-checker/`
 - `https://gwondalhyeon.github.io/AI-teacher-training/webapps/smart-city-balance/`
+- `https://gwondalhyeon.github.io/AI-teacher-training/webapps/city-budget-for-all/`
+- `https://gwondalhyeon.github.io/AI-teacher-training/webapps/inheritance-family-tree/`
 
 확인할 것:
 
@@ -253,7 +268,7 @@ AI-teacher-training/
 
 - `korean-language-topic-proposals.md`
 
-도시·법 상위 3개 웹앱은 구현과 수업효과 검토를 통과했다. 나머지 3개를 실제 구현할 때는 위 개별 작업지시서를 기준으로 하되, 기존 과학 웹앱과 마찬가지로 단일 `index.html`, Tailwind CSS CDN, vanilla JavaScript 기준을 유지한다.
+도시·법 웹앱 5개는 구현과 수업효과 검토를 통과했다. `law-youth-rights-age-lab.md`는 법령 최신성 확인 전까지 보류한다. 구현을 재개할 때는 공식 기준표를 먼저 만든 뒤, 기존 과학 웹앱과 마찬가지로 단일 `index.html`, Tailwind CSS CDN, vanilla JavaScript 기준을 유지한다.
 
 병렬 구현 시에는 `planning/humanities-webapp-work-orders/agent-workflow.md`를 먼저 따른다. 수업효과 검토 에이전트가 후보 6개를 엄격히 평가해 상위 3개를 먼저 선택하고, 구현 결과가 학습목표와 아하포인트를 충분히 살리지 못하면 수정 요구 또는 보류 판정을 낼 수 있다.
 

@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>상속 관계 가계도 시뮬레이터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .person-card,
+      .preset-button,
+      .choice-button,
+      .segment-button {
+        transition:
+          background-color 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease,
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .person-card.active {
+        box-shadow: 0 16px 34px rgb(15 23 42 / 0.10);
+      }
+
+      .person-card.inactive {
+        opacity: 0.33;
+        filter: grayscale(0.75);
+      }
+
+      .person-card.share-boost {
+        transform: scale(1.05);
+      }
+
+      .tree-line {
+        position: absolute;
+        background: rgb(148 163 184 / 0.55);
+        border-radius: 999px;
+      }
+
+      .fade-ring {
+        animation: fadeRing 1300ms ease-out;
+      }
+
+      @keyframes fadeRing {
+        0% {
+          box-shadow: 0 0 0 0 rgb(245 158 11 / 0.45);
+        }
+        100% {
+          box-shadow: 0 0 0 18px rgb(245 158 11 / 0);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-teal-50 text-zinc-950">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <header class="mb-5">
+        <div class="flex flex-wrap items-center gap-2">
+          <a class="text-sm font-semibold text-teal-700 hover:text-teal-900" href="../">연수 시연용 웹앱</a>
+          <span class="text-sm text-zinc-400">/</span>
+          <p class="text-sm font-semibold text-teal-700">법과 사회</p>
+        </div>
+        <div class="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-normal sm:text-4xl">상속 관계 가계도 시뮬레이터</h1>
+            <p class="mt-3 max-w-4xl text-base leading-7 text-zinc-700">
+              유언이 없다고 가정할 때, 가족 구성과 채무 조건을 바꾸면 누가 상속권자가 되는지 가계도와 몫이 함께 달라집니다.
+            </p>
+          </div>
+          <div class="rounded-md border border-teal-200 bg-white px-4 py-3 shadow-sm">
+            <p class="text-xs font-bold text-teal-700">핵심 질문</p>
+            <p class="mt-1 text-sm font-semibold text-zinc-800">가까운 가족이면 모두 같은 순서로 상속받을까요?</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid items-start gap-4 xl:grid-cols-[330px_minmax(0,1fr)]">
+        <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-lg font-bold">가족 구성 조건</h2>
+            <button id="resetButton" class="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-bold text-zinc-700 hover:border-teal-500" type="button">
+              기본 사례
+            </button>
+          </div>
+
+          <div class="mt-4 grid gap-2" role="group" aria-label="빠른 사례 선택">
+            <button class="preset-button rounded-md border px-3 py-2 text-left text-sm font-bold" type="button" data-preset="basic">
+              배우자 + 부모 + 형제자매
+              <span class="block pt-1 text-xs font-semibold opacity-75">자녀가 없을 때 부모가 들어오는 장면</span>
+            </button>
+            <button class="preset-button rounded-md border px-3 py-2 text-left text-sm font-bold" type="button" data-preset="child">
+              자녀 1명 추가
+              <span class="block pt-1 text-xs font-semibold opacity-75">부모·형제자매가 후순위로 흐려짐</span>
+            </button>
+            <button class="preset-button rounded-md border px-3 py-2 text-left text-sm font-bold" type="button" data-preset="adopted">
+              친양자 포함
+              <span class="block pt-1 text-xs font-semibold opacity-75">친양자를 자녀와 같은 순위로 보기</span>
+            </button>
+            <button class="preset-button rounded-md border px-3 py-2 text-left text-sm font-bold" type="button" data-preset="spouseOnly">
+              배우자 단독
+              <span class="block pt-1 text-xs font-semibold opacity-75">자녀와 부모가 없을 때의 변화</span>
+            </button>
+            <button class="preset-button rounded-md border px-3 py-2 text-left text-sm font-bold" type="button" data-preset="debt">
+              채무가 더 큰 사례
+              <span class="block pt-1 text-xs font-semibold opacity-75">승인·포기·한정 승인 비교</span>
+            </button>
+          </div>
+
+          <div class="mt-5 border-t border-zinc-200 pt-4">
+            <p class="text-sm font-bold text-zinc-700">직접 조정</p>
+            <div class="mt-3 grid gap-2">
+              <label class="flex cursor-pointer items-center justify-between rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold">
+                <span>배우자 있음</span>
+                <input id="spouseToggle" class="h-4 w-4 accent-teal-700" type="checkbox" />
+              </label>
+              <div class="rounded-md border border-zinc-200 px-3 py-3">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-sm font-semibold">자녀 수</span>
+                  <span id="childCountLabel" class="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold text-teal-700">0명</span>
+                </div>
+                <div class="mt-2 grid grid-cols-3 gap-2" role="group" aria-label="자녀 수 선택">
+                  <button class="segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-children="0">0명</button>
+                  <button class="segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-children="1">1명</button>
+                  <button class="segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-children="2">2명</button>
+                </div>
+              </div>
+              <label class="flex cursor-pointer items-center justify-between rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold">
+                <span>친양자 있음</span>
+                <input id="adoptedToggle" class="h-4 w-4 accent-teal-700" type="checkbox" />
+              </label>
+              <label class="flex cursor-pointer items-center justify-between rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold">
+                <span>부모 있음</span>
+                <input id="parentsToggle" class="h-4 w-4 accent-teal-700" type="checkbox" />
+              </label>
+              <label class="flex cursor-pointer items-center justify-between rounded-md border border-zinc-200 px-3 py-2 text-sm font-semibold">
+                <span>형제자매 있음</span>
+                <input id="siblingsToggle" class="h-4 w-4 accent-teal-700" type="checkbox" />
+              </label>
+              <label class="flex cursor-pointer items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold">
+                <span>유언 있음</span>
+                <input id="willToggle" class="h-4 w-4 accent-amber-600" type="checkbox" />
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-5 border-t border-zinc-200 pt-4">
+            <p class="text-sm font-bold text-zinc-700">재산·채무 프리셋</p>
+            <div class="mt-3">
+              <p class="text-xs font-bold text-zinc-500">재산</p>
+              <div class="mt-2 grid grid-cols-3 gap-2" role="group" aria-label="재산 프리셋">
+                <button class="asset-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-asset="1">1억</button>
+                <button class="asset-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-asset="3">3억</button>
+                <button class="asset-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-asset="5">5억</button>
+              </div>
+            </div>
+            <div class="mt-3">
+              <p class="text-xs font-bold text-zinc-500">채무</p>
+              <div class="mt-2 grid grid-cols-3 gap-2" role="group" aria-label="채무 프리셋">
+                <button class="debt-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-debt="none">없음</button>
+                <button class="debt-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-debt="some">일부</button>
+                <button class="debt-button segment-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-debt="heavy">더 큼</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="grid gap-4">
+          <section class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-bold">가계도 변화</h2>
+                <p id="sceneCaption" class="mt-1 text-sm leading-6 text-zinc-600"></p>
+              </div>
+              <div id="rankBadge" class="rounded-full px-3 py-1 text-sm font-bold"></div>
+            </div>
+
+            <div id="fadeNotice" class="mt-3 hidden rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold leading-6 text-amber-900">
+              자녀 또는 친양자가 있으면 부모와 형제자매는 이번 조건의 상속권자에서 제외되어 흐리게 표시됩니다.
+            </div>
+
+            <div class="mt-4 overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-br from-white via-slate-50 to-teal-50 p-3 sm:p-5">
+              <div id="treeBoard" class="relative mx-auto grid max-w-4xl gap-4">
+                <div class="tree-line left-[50%] top-[94px] hidden h-10 w-1 -translate-x-1/2 sm:block"></div>
+                <div class="tree-line left-[25%] top-[240px] hidden h-1 w-[50%] sm:block"></div>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div></div>
+                  <div id="parentA" class="person-slot"></div>
+                  <div id="parentB" class="person-slot"></div>
+                  <div></div>
+                </div>
+
+                <div class="grid items-center gap-3 sm:grid-cols-[1fr_1.15fr_1.15fr_1fr]">
+                  <div id="siblings" class="person-slot"></div>
+                  <div id="deceased" class="person-slot"></div>
+                  <div id="spouse" class="person-slot"></div>
+                  <div class="hidden sm:block"></div>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-4">
+                  <div id="child1" class="person-slot"></div>
+                  <div id="child2" class="person-slot"></div>
+                  <div id="adopted" class="person-slot"></div>
+                  <div id="emptyChild" class="person-slot"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <div class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 class="text-lg font-bold">법정 상속분 흐름</h2>
+                  <p class="mt-1 text-sm text-zinc-600">금액보다 순위와 몫을 먼저 읽도록 단순화했습니다.</p>
+                </div>
+                <div id="shareTotal" class="rounded-full bg-zinc-100 px-3 py-1 text-sm font-bold text-zinc-700"></div>
+              </div>
+
+              <div id="shareBars" class="mt-4 grid gap-3"></div>
+
+              <div class="mt-4 overflow-hidden rounded-md border border-zinc-200">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-zinc-100 text-xs font-bold text-zinc-600">
+                    <tr>
+                      <th class="px-3 py-2">상속인</th>
+                      <th class="px-3 py-2">상속 순위</th>
+                      <th class="px-3 py-2">법정 상속분</th>
+                      <th class="px-3 py-2">채무 포함</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultRows" class="divide-y divide-zinc-100"></tbody>
+                </table>
+              </div>
+
+              <p id="conclusionText" class="mt-4 rounded-md p-4 text-base font-bold leading-7"></p>
+            </div>
+
+            <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+              <h2 class="text-lg font-bold">채무가 있을 때의 선택</h2>
+              <p id="debtIntro" class="mt-1 text-sm leading-6 text-zinc-600"></p>
+
+              <div id="debtChoices" class="mt-4 hidden">
+                <div class="grid grid-cols-3 gap-2" role="group" aria-label="상속 선택 비교">
+                  <button class="choice-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-choice="accept">단순 승인</button>
+                  <button class="choice-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-choice="renounce">상속 포기</button>
+                  <button class="choice-button rounded-md border px-2 py-2 text-sm font-bold" type="button" data-choice="limited">한정 승인</button>
+                </div>
+                <div id="choiceCards" class="mt-3 grid gap-2"></div>
+                <p id="choiceResult" class="mt-3 rounded-md border px-3 py-3 text-sm font-bold leading-6"></p>
+              </div>
+
+              <div id="noDebtPanel" class="mt-4 rounded-md bg-zinc-50 px-3 py-3 text-sm font-semibold leading-6 text-zinc-700">
+                채무 프리셋을 켜면 단순 승인, 상속 포기, 한정 승인의 차이를 비교합니다.
+              </div>
+
+              <div id="willNotice" class="mt-4 hidden rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm font-bold leading-6 text-amber-900">
+                유언이 있으면 우선 검토가 필요합니다. 이 화면은 유언의 효력이나 분쟁을 해결하지 않고, 법정 상속 구조를 이해하기 위한 보조 장면만 보여 줍니다.
+              </div>
+            </aside>
+          </section>
+        </section>
+      </section>
+
+      <footer class="mt-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-zinc-600 shadow-sm">
+        수업용 단순화 예시입니다. 실제 기준은 최신 법령을 확인하세요.
+      </footer>
+    </main>
+
+    <script>
+      const state = {
+        spouse: true,
+        children: 0,
+        adopted: false,
+        parents: true,
+        siblings: true,
+        will: false,
+        asset: 3,
+        debt: "none",
+        choice: "accept",
+        preset: "basic",
+      };
+
+      const slots = ["parentA", "parentB", "siblings", "deceased", "spouse", "child1", "child2", "adopted", "emptyChild"];
+      const debtLabels = {
+        none: "채무 없음",
+        some: "채무 일부 있음",
+        heavy: "채무가 재산보다 큼",
+      };
+      const choiceInfo = {
+        accept: {
+          title: "단순 승인",
+          body: "재산과 채무를 모두 이어받는 선택으로 비교합니다.",
+          resultSome: "이 조건을 가정하면 단순 승인은 재산과 채무가 함께 넘어오는 선택으로 볼 수 있습니다.",
+          resultHeavy: "이 조건을 가정하면 채무가 더 큰 상황에서 단순 승인은 부담이 커질 수 있습니다.",
+        },
+        renounce: {
+          title: "상속 포기",
+          body: "상속인의 지위에서 벗어나는 선택으로 비교합니다.",
+          resultSome: "이 조건을 가정하면 상속 포기는 재산도 채무도 이어받지 않는 방향으로 이해할 수 있습니다.",
+          resultHeavy: "이 조건을 가정하면 채무 부담을 피하는 선택으로 비교할 수 있지만, 다음 순위 문제는 별도 검토가 필요합니다.",
+        },
+        limited: {
+          title: "한정 승인",
+          body: "상속받은 재산 범위 안에서 채무를 갚는 선택으로 비교합니다.",
+          resultSome: "이 조건을 가정하면 한정 승인은 받은 재산 범위 안에서 채무를 정리하는 선택으로 볼 수 있습니다.",
+          resultHeavy: "이 조건을 가정하면 한정 승인은 재산을 넘는 채무 부담을 제한하는 장면을 보여 줍니다.",
+        },
+      };
+
+      const elements = {
+        spouseToggle: document.getElementById("spouseToggle"),
+        adoptedToggle: document.getElementById("adoptedToggle"),
+        parentsToggle: document.getElementById("parentsToggle"),
+        siblingsToggle: document.getElementById("siblingsToggle"),
+        willToggle: document.getElementById("willToggle"),
+        childCountLabel: document.getElementById("childCountLabel"),
+        sceneCaption: document.getElementById("sceneCaption"),
+        rankBadge: document.getElementById("rankBadge"),
+        fadeNotice: document.getElementById("fadeNotice"),
+        shareTotal: document.getElementById("shareTotal"),
+        shareBars: document.getElementById("shareBars"),
+        resultRows: document.getElementById("resultRows"),
+        conclusionText: document.getElementById("conclusionText"),
+        debtIntro: document.getElementById("debtIntro"),
+        debtChoices: document.getElementById("debtChoices"),
+        choiceCards: document.getElementById("choiceCards"),
+        choiceResult: document.getElementById("choiceResult"),
+        noDebtPanel: document.getElementById("noDebtPanel"),
+        willNotice: document.getElementById("willNotice"),
+      };
+
+      function getHeirs() {
+        const descendants = [];
+        for (let i = 1; i <= state.children; i += 1) {
+          descendants.push({ id: `child${i}`, label: `자녀 ${i}`, relation: "자녀", rank: "1순위", share: 1 });
+        }
+        if (state.adopted) {
+          descendants.push({ id: "adopted", label: "친양자", relation: "자녀와 같은 순위", rank: "1순위", share: 1, badge: "친양자" });
+        }
+
+        if (descendants.length > 0) {
+          const heirs = [...descendants];
+          if (state.spouse) heirs.unshift({ id: "spouse", label: "배우자", relation: "배우자", rank: "공동상속", share: 1.5, boosted: true });
+          return { heirs, mode: "descendants", rankLabel: "직계비속 우선" };
+        }
+
+        if (state.parents) {
+          const heirs = [
+            { id: "parentA", label: "부모 A", relation: "직계존속", rank: "2순위", share: 1 },
+            { id: "parentB", label: "부모 B", relation: "직계존속", rank: "2순위", share: 1 },
+          ];
+          if (state.spouse) heirs.unshift({ id: "spouse", label: "배우자", relation: "배우자", rank: "공동상속", share: 1.5, boosted: true });
+          return { heirs, mode: "parents", rankLabel: "직계존속 공동" };
+        }
+
+        if (state.spouse) {
+          return {
+            heirs: [{ id: "spouse", label: "배우자", relation: "배우자", rank: "단독상속", share: "all" }],
+            mode: "spouseOnly",
+            rankLabel: "배우자 단독",
+          };
+        }
+
+        if (state.siblings) {
+          return {
+            heirs: [{ id: "siblings", label: "형제자매", relation: "형제자매", rank: "3순위", share: 1 }],
+            mode: "siblings",
+            rankLabel: "형제자매 순위",
+          };
+        }
+
+        return { heirs: [], mode: "none", rankLabel: "상속인 없음" };
+      }
+
+      function isVisible(id) {
+        if (id === "spouse") return state.spouse;
+        if (id === "parentA" || id === "parentB") return state.parents;
+        if (id === "siblings") return state.siblings;
+        if (id === "child1") return state.children >= 1;
+        if (id === "child2") return state.children >= 2;
+        if (id === "adopted") return state.adopted;
+        if (id === "deceased" || id === "emptyChild") return true;
+        return false;
+      }
+
+      function relationText(id) {
+        const labels = {
+          parentA: "부모",
+          parentB: "부모",
+          siblings: "형제자매",
+          deceased: "피상속인",
+          spouse: "배우자",
+          child1: "자녀",
+          child2: "자녀",
+          adopted: "친양자",
+          emptyChild: "자녀 없음",
+        };
+        return labels[id];
+      }
+
+      function displayName(id) {
+        const labels = {
+          parentA: "부모 A",
+          parentB: "부모 B",
+          siblings: "형제자매",
+          deceased: "피상속인",
+          spouse: "배우자",
+          child1: "자녀 1",
+          child2: "자녀 2",
+          adopted: "친양자",
+          emptyChild: "자녀 없음",
+        };
+        return labels[id];
+      }
+
+      function renderPerson(id, heirMap, mode) {
+        const slot = document.getElementById(id);
+        const visible = isVisible(id);
+        const heir = heirMap.get(id);
+
+        if (!visible) {
+          slot.innerHTML = `<div class="min-h-24 rounded-lg border border-dashed border-zinc-200 bg-white/55 p-3 text-center text-sm font-semibold text-zinc-300">${displayName(id)}</div>`;
+          return;
+        }
+
+        if (id === "emptyChild" && (state.children > 0 || state.adopted)) {
+          slot.innerHTML = `<div class="min-h-24 rounded-lg border border-dashed border-teal-200 bg-teal-50/70 p-3 text-center text-sm font-bold text-teal-700">자녀 순위 작동 중</div>`;
+          return;
+        }
+
+        const isDeceased = id === "deceased";
+        const excludedByChild = (mode === "descendants" && ["parentA", "parentB", "siblings"].includes(id));
+        const excludedBySpouseOnly = (mode === "spouseOnly" && id === "siblings");
+        const inactive = !isDeceased && !heir;
+        const activeClasses = heir
+          ? "person-card active border-teal-500 bg-teal-50 text-teal-950"
+          : isDeceased
+            ? "person-card border-zinc-800 bg-zinc-900 text-white"
+            : "person-card inactive border-zinc-200 bg-white text-zinc-600";
+        const boostClass = heir?.boosted ? "share-boost border-2" : "border";
+        const note = heir
+          ? heir.share === "all"
+            ? "전체"
+            : `${heir.share}몫`
+          : excludedByChild
+            ? "후순위"
+            : excludedBySpouseOnly
+              ? "배우자 단독 시 제외"
+              : isDeceased
+                ? "상속 개시 기준"
+                : "조건 밖";
+        const badge = heir?.badge ? `<span class="rounded-full bg-cyan-100 px-2 py-0.5 text-[11px] font-bold text-cyan-800">${heir.badge}</span>` : "";
+
+        slot.innerHTML = `
+          <div class="${activeClasses} ${boostClass} min-h-24 rounded-lg p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p class="text-xs font-bold opacity-70">${relationText(id)}</p>
+                <p class="mt-1 text-base font-black">${displayName(id)}</p>
+              </div>
+              ${badge}
+            </div>
+            <div class="mt-3 rounded-md ${heir ? "bg-white/80" : isDeceased ? "bg-white/10" : "bg-zinc-100"} px-2 py-1 text-xs font-bold">
+              ${note}
+            </div>
+          </div>
+        `;
+
+        if (inactive && (excludedByChild || excludedBySpouseOnly)) {
+          slot.firstElementChild.classList.add("fade-ring");
+        }
+      }
+
+      function moneyText(value) {
+        return `${value}억 원`;
+      }
+
+      function renderShareBars(heirs) {
+        if (heirs.length === 0) {
+          elements.shareBars.innerHTML = `<div class="rounded-md bg-zinc-50 px-3 py-4 text-sm font-semibold text-zinc-600">표시할 상속인이 없습니다.</div>`;
+          elements.shareTotal.textContent = "0몫";
+          return;
+        }
+
+        if (heirs.length === 1 && heirs[0].share === "all") {
+          elements.shareTotal.textContent = "전체";
+          elements.shareBars.innerHTML = `
+            <div class="rounded-md border border-teal-200 bg-teal-50 p-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm font-black text-teal-950">${heirs[0].label}</span>
+                <span class="rounded-full bg-teal-700 px-3 py-1 text-xs font-bold text-white">전체</span>
+              </div>
+              <div class="mt-2 h-5 rounded-full bg-white">
+                <div class="h-5 rounded-full bg-teal-600" style="width: 100%"></div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const total = heirs.reduce((sum, heir) => sum + Number(heir.share), 0);
+        elements.shareTotal.textContent = `총 ${total}몫`;
+        elements.shareBars.innerHTML = heirs.map((heir) => {
+          const width = Math.round((Number(heir.share) / total) * 100);
+          const isSpouse = heir.id === "spouse";
+          const barColor = isSpouse ? "bg-amber-500" : "bg-teal-600";
+          const boxColor = isSpouse ? "border-amber-200 bg-amber-50" : "border-teal-200 bg-teal-50";
+          return `
+            <div class="rounded-md border ${boxColor} p-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm font-black text-zinc-950">${heir.label}</span>
+                <span class="rounded-full ${isSpouse ? "bg-amber-600" : "bg-teal-700"} px-3 py-1 text-xs font-bold text-white">${heir.share}몫</span>
+              </div>
+              <div class="mt-2 h-5 rounded-full bg-white">
+                <div class="h-5 rounded-full ${barColor}" style="width: ${width}%"></div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderTable(heirs) {
+        if (heirs.length === 0) {
+          elements.resultRows.innerHTML = `<tr><td class="px-3 py-4 text-sm font-semibold text-zinc-500" colspan="4">상속인을 표시할 수 없는 조건입니다.</td></tr>`;
+          return;
+        }
+
+        elements.resultRows.innerHTML = heirs.map((heir) => {
+          const share = heir.share === "all" ? "전체" : `${heir.share}몫`;
+          const debt = state.debt === "none" ? "비교 안 함" : "재산과 함께 고려";
+          return `
+            <tr>
+              <td class="px-3 py-3 font-bold text-zinc-900">${heir.label}</td>
+              <td class="px-3 py-3 text-zinc-700">${heir.rank}</td>
+              <td class="px-3 py-3 font-bold ${heir.id === "spouse" && heir.share !== "all" ? "text-amber-700" : "text-teal-700"}">${share}</td>
+              <td class="px-3 py-3 text-zinc-700">${debt}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function renderConclusion(heirs, mode) {
+        const names = heirs.map((heir) => heir.label).join(", ");
+        const hasDescendants = mode === "descendants";
+        const debtPart = state.debt === "none"
+          ? "채무 프리셋은 꺼져 있어 상속 선택 비교는 숨겨져 있습니다."
+          : `${debtLabels[state.debt]} 조건이므로 승인·포기·한정 승인을 따로 비교합니다.`;
+        const willPart = state.will ? " 유언이 있으면 우선 검토가 필요합니다." : "";
+        let text = "";
+
+        if (heirs.length === 0) {
+          text = "이 조건을 가정하면 표시된 범위 안에서는 상속권자를 찾기 어렵습니다. 이 앱은 4촌 이내 방계 혈족 등 심화 쟁점은 다루지 않습니다.";
+        } else if (hasDescendants) {
+          text = `이 조건을 가정하면 상속권자는 ${names}입니다. 부모와 형제자매는 후순위로 흐려집니다. 배우자가 함께 있으면 배우자 몫은 1.5몫으로 더 크게 보입니다.`;
+        } else if (mode === "parents") {
+          text = `이 조건을 가정하면 자녀가 없으므로 상속권자는 ${names}입니다. 배우자가 함께 있으면 배우자 몫은 1.5몫입니다.`;
+        } else if (mode === "spouseOnly") {
+          text = "이 조건을 가정하면 자녀와 부모가 없으므로 배우자가 단독 상속하는 장면으로 표시됩니다.";
+        } else if (mode === "siblings") {
+          text = "이 조건을 가정하면 배우자, 자녀, 부모가 없어 형제자매가 상속권자로 표시됩니다.";
+        }
+
+        elements.conclusionText.className = "mt-4 rounded-md border border-teal-200 bg-teal-50 p-4 text-base font-bold leading-7 text-teal-950";
+        elements.conclusionText.textContent = `${text} ${debtPart}${willPart}`;
+      }
+
+      function renderDebtPanel() {
+        elements.debtIntro.textContent = `현재 재산은 ${moneyText(state.asset)}, 채무는 ${debtLabels[state.debt]}으로 둔 수업용 프리셋입니다.`;
+        elements.willNotice.classList.toggle("hidden", !state.will);
+
+        if (state.debt === "none") {
+          elements.debtChoices.classList.add("hidden");
+          elements.noDebtPanel.classList.remove("hidden");
+          return;
+        }
+
+        elements.debtChoices.classList.remove("hidden");
+        elements.noDebtPanel.classList.add("hidden");
+        document.querySelectorAll(".choice-button").forEach((button) => {
+          const active = button.dataset.choice === state.choice;
+          button.className = active
+            ? "choice-button rounded-md border border-rose-700 bg-rose-700 px-2 py-2 text-sm font-bold text-white"
+            : "choice-button rounded-md border border-zinc-300 bg-white px-2 py-2 text-sm font-bold text-zinc-800 hover:border-rose-500";
+        });
+
+        elements.choiceCards.innerHTML = Object.entries(choiceInfo).map(([key, info]) => {
+          const active = key === state.choice;
+          return `
+            <button class="choice-button w-full rounded-md border ${active ? "border-rose-300 bg-rose-50" : "border-zinc-200 bg-zinc-50"} px-3 py-3 text-left" type="button" data-choice="${key}">
+              <p class="text-sm font-black ${active ? "text-rose-800" : "text-zinc-800"}">${info.title}</p>
+              <p class="mt-1 text-xs font-semibold leading-5 text-zinc-600">${info.body}</p>
+            </button>
+          `;
+        }).join("");
+
+        const resultKey = state.debt === "heavy" ? "resultHeavy" : "resultSome";
+        elements.choiceResult.className = "mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-3 text-sm font-bold leading-6 text-rose-950";
+        elements.choiceResult.textContent = choiceInfo[state.choice][resultKey];
+        elements.choiceCards.querySelectorAll("[data-choice]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.choice = button.dataset.choice;
+            render();
+          });
+        });
+      }
+
+      function renderControls() {
+        elements.spouseToggle.checked = state.spouse;
+        elements.adoptedToggle.checked = state.adopted;
+        elements.parentsToggle.checked = state.parents;
+        elements.siblingsToggle.checked = state.siblings;
+        elements.willToggle.checked = state.will;
+        elements.childCountLabel.textContent = `${state.children}명`;
+
+        document.querySelectorAll(".preset-button").forEach((button) => {
+          const active = button.dataset.preset === state.preset;
+          button.className = active
+            ? "preset-button rounded-md border border-teal-700 bg-teal-700 px-3 py-2 text-left text-sm font-bold text-white"
+            : "preset-button rounded-md border border-zinc-300 bg-white px-3 py-2 text-left text-sm font-bold text-zinc-800 hover:border-teal-500";
+        });
+
+        document.querySelectorAll("[data-children]").forEach((button) => {
+          const active = Number(button.dataset.children) === state.children;
+          button.className = active
+            ? "segment-button rounded-md border border-teal-700 bg-teal-700 px-2 py-2 text-sm font-bold text-white"
+            : "segment-button rounded-md border border-zinc-300 bg-white px-2 py-2 text-sm font-bold text-zinc-800 hover:border-teal-500";
+        });
+
+        document.querySelectorAll(".asset-button").forEach((button) => {
+          const active = Number(button.dataset.asset) === state.asset;
+          button.className = active
+            ? "asset-button segment-button rounded-md border border-teal-700 bg-teal-700 px-2 py-2 text-sm font-bold text-white"
+            : "asset-button segment-button rounded-md border border-zinc-300 bg-white px-2 py-2 text-sm font-bold text-zinc-800 hover:border-teal-500";
+        });
+
+        document.querySelectorAll(".debt-button").forEach((button) => {
+          const active = button.dataset.debt === state.debt;
+          button.className = active
+            ? "debt-button segment-button rounded-md border border-rose-700 bg-rose-700 px-2 py-2 text-sm font-bold text-white"
+            : "debt-button segment-button rounded-md border border-zinc-300 bg-white px-2 py-2 text-sm font-bold text-zinc-800 hover:border-rose-500";
+        });
+      }
+
+      function render() {
+        const { heirs, mode, rankLabel } = getHeirs();
+        const heirMap = new Map(heirs.map((heir) => [heir.id, heir]));
+
+        slots.forEach((id) => renderPerson(id, heirMap, mode));
+        renderControls();
+        renderShareBars(heirs);
+        renderTable(heirs);
+        renderConclusion(heirs, mode);
+        renderDebtPanel();
+
+        const descendantCount = state.children + (state.adopted ? 1 : 0);
+        elements.fadeNotice.classList.toggle("hidden", descendantCount === 0);
+        elements.sceneCaption.textContent = descendantCount > 0
+          ? "자녀 또는 친양자를 켜면 1순위가 먼저 작동하고, 부모·형제자매는 화면에서 흐려집니다."
+          : "자녀가 없는 조건에서는 부모, 배우자, 형제자매의 순위 차이를 비교합니다.";
+        elements.rankBadge.className = "rounded-full bg-teal-100 px-3 py-1 text-sm font-bold text-teal-800";
+        elements.rankBadge.textContent = rankLabel;
+      }
+
+      function setPreset(name) {
+        state.preset = name;
+        if (name === "basic") {
+          Object.assign(state, { spouse: true, children: 0, adopted: false, parents: true, siblings: true, will: false, asset: 3, debt: "none", choice: "accept" });
+        }
+        if (name === "child") {
+          Object.assign(state, { spouse: true, children: 1, adopted: false, parents: true, siblings: true, will: false, asset: 3, debt: "none", choice: "accept" });
+        }
+        if (name === "adopted") {
+          Object.assign(state, { spouse: true, children: 1, adopted: true, parents: true, siblings: true, will: false, asset: 3, debt: "none", choice: "accept" });
+        }
+        if (name === "spouseOnly") {
+          Object.assign(state, { spouse: true, children: 0, adopted: false, parents: false, siblings: true, will: false, asset: 3, debt: "none", choice: "accept" });
+        }
+        if (name === "debt") {
+          Object.assign(state, { spouse: true, children: 2, adopted: false, parents: true, siblings: true, will: false, asset: 1, debt: "heavy", choice: "limited" });
+        }
+        render();
+      }
+
+      document.querySelectorAll(".preset-button").forEach((button) => {
+        button.addEventListener("click", () => setPreset(button.dataset.preset));
+      });
+
+      document.getElementById("resetButton").addEventListener("click", () => setPreset("basic"));
+
+      elements.spouseToggle.addEventListener("change", (event) => {
+        state.spouse = event.target.checked;
+        state.preset = "custom";
+        render();
+      });
+      elements.adoptedToggle.addEventListener("change", (event) => {
+        state.adopted = event.target.checked;
+        state.preset = "custom";
+        render();
+      });
+      elements.parentsToggle.addEventListener("change", (event) => {
+        state.parents = event.target.checked;
+        state.preset = "custom";
+        render();
+      });
+      elements.siblingsToggle.addEventListener("change", (event) => {
+        state.siblings = event.target.checked;
+        state.preset = "custom";
+        render();
+      });
+      elements.willToggle.addEventListener("change", (event) => {
+        state.will = event.target.checked;
+        state.preset = "custom";
+        render();
+      });
+
+      document.querySelectorAll("[data-children]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.children = Number(button.dataset.children);
+          state.preset = "custom";
+          render();
+        });
+      });
+
+      document.querySelectorAll(".asset-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.asset = Number(button.dataset.asset);
+          state.preset = "custom";
+          render();
+        });
+      });
+
+      document.querySelectorAll(".debt-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.debt = button.dataset.debt;
+          state.choice = state.debt === "none" ? "accept" : state.choice;
+          state.preset = "custom";
+          render();
+        });
+      });
+
+      document.querySelectorAll(".choice-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.choice = button.dataset.choice;
+          render();
+        });
+      });
+
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>스마트 도시 균형 실험실</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .city-cell {
+        min-height: 92px;
+      }
+
+      .data-line {
+        position: absolute;
+        height: 2px;
+        transform-origin: left center;
+        background: rgb(14 165 233 / 0.55);
+        transition: opacity 220ms ease, width 220ms ease;
+      }
+
+      .data-node {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: white;
+        border: 3px solid rgb(14 165 233);
+        box-shadow: 0 0 0 6px rgb(14 165 233 / 0.12);
+        transition: transform 220ms ease, box-shadow 220ms ease;
+      }
+
+      .pulse-high .data-node {
+        animation: nodePulse 1200ms ease-in-out infinite;
+      }
+
+      @keyframes nodePulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 5px rgb(14 165 233 / 0.12);
+        }
+        50% {
+          transform: scale(1.18);
+          box-shadow: 0 0 0 12px rgb(14 165 233 / 0.2);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-zinc-950">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <header class="mb-5">
+        <div class="flex flex-wrap items-center gap-2 text-sm font-semibold">
+          <a class="text-sky-700 hover:text-sky-900" href="../">연수 시연용 웹앱</a>
+          <span class="text-zinc-400">/</span>
+          <span class="text-sky-700">도시의 미래탐구</span>
+        </div>
+        <div class="mt-2 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-normal sm:text-4xl">스마트 도시 균형 실험실</h1>
+            <p class="mt-3 max-w-3xl text-base leading-7 text-zinc-700">
+              스마트 기술을 많이 넣으면 편리성은 커지지만, 데이터 수집과 운영 방식에 따라 비용·개인정보 위험·형평성·신뢰가 함께 흔들립니다.
+            </p>
+          </div>
+          <div class="rounded-md border border-sky-200 bg-white px-4 py-3 shadow-sm">
+            <p class="text-xs font-bold text-sky-700">핵심 질문</p>
+            <p class="mt-1 text-sm font-semibold text-zinc-800">편리한 도시와 믿을 수 있는 도시는 같은 방향으로 움직일까요?</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid flex-1 gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
+        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section class="rounded-lg border border-zinc-200 bg-white p-3 shadow-sm sm:p-4" aria-label="가상의 도시 보드">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-bold">가상의 도시 보드</h2>
+                <p id="boardCaption" class="mt-1 text-sm leading-6 text-zinc-600">균형형 구성: 필요한 기술을 연결하되 데이터 수집은 보통으로 둡니다.</p>
+              </div>
+              <div class="rounded-full bg-zinc-950 px-3 py-1 text-xs font-bold text-white">
+                <span id="activeCount">4</span>개 기술 적용
+              </div>
+            </div>
+
+            <div id="cityBoard" class="relative overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-br from-slate-100 via-white to-cyan-50 p-3">
+              <div id="networkLayer" class="pointer-events-none absolute inset-0 transition-opacity">
+                <div class="data-line left-[18%] top-[30%] w-[30%] rotate-[12deg]"></div>
+                <div class="data-line left-[45%] top-[37%] w-[28%] rotate-[32deg]"></div>
+                <div class="data-line left-[24%] top-[64%] w-[34%] -rotate-[18deg]"></div>
+                <div class="data-line left-[54%] top-[68%] w-[24%] -rotate-[38deg]"></div>
+                <div class="data-node left-[17%] top-[27%]"></div>
+                <div class="data-node left-[45%] top-[36%]"></div>
+                <div class="data-node left-[73%] top-[55%]"></div>
+                <div class="data-node left-[26%] top-[66%]"></div>
+                <div class="data-node left-[58%] top-[58%]"></div>
+              </div>
+
+              <div class="relative grid gap-3 sm:grid-cols-2">
+                <div class="city-cell rounded-md border border-zinc-200 bg-white/90 p-3 shadow-sm">
+                  <p class="text-xs font-bold text-zinc-500">교통축</p>
+                  <div class="mt-3 h-3 rounded-full bg-zinc-300">
+                    <div id="roadFlow" class="h-3 rounded-full bg-sky-500 transition-all" style="width: 62%"></div>
+                  </div>
+                  <p id="roadLabel" class="mt-3 text-sm font-semibold text-zinc-700">신호와 주차 데이터가 일부 연결됨</p>
+                </div>
+
+                <div class="city-cell rounded-md border border-zinc-200 bg-white/90 p-3 shadow-sm">
+                  <p class="text-xs font-bold text-zinc-500">주거지역</p>
+                  <div class="mt-3 grid grid-cols-5 gap-1">
+                    <span class="h-9 rounded bg-cyan-100"></span>
+                    <span class="h-12 rounded bg-cyan-200"></span>
+                    <span class="h-8 rounded bg-cyan-100"></span>
+                    <span class="h-11 rounded bg-cyan-200"></span>
+                    <span class="h-10 rounded bg-cyan-100"></span>
+                  </div>
+                  <p id="homeLabel" class="mt-3 text-sm font-semibold text-zinc-700">생활 서비스 접근성이 보통입니다</p>
+                </div>
+
+                <div class="city-cell rounded-md border border-zinc-200 bg-white/90 p-3 shadow-sm">
+                  <p class="text-xs font-bold text-zinc-500">환경 관리</p>
+                  <div class="mt-3 flex items-end gap-2">
+                    <span id="airMark" class="h-11 w-11 rounded-full border-4 border-emerald-300 bg-emerald-50 transition-colors"></span>
+                    <span id="wasteMark" class="h-9 w-12 rounded-t-md bg-zinc-300 transition-colors"></span>
+                    <span class="h-7 w-10 rounded-t-md bg-emerald-100"></span>
+                  </div>
+                  <p id="envLabel" class="mt-3 text-sm font-semibold text-zinc-700">대기·폐기물 대응이 함께 보입니다</p>
+                </div>
+
+                <div class="city-cell rounded-md border border-zinc-200 bg-white/90 p-3 shadow-sm">
+                  <p class="text-xs font-bold text-zinc-500">공공 인프라</p>
+                  <div class="mt-3 flex items-center gap-2">
+                    <span id="lightMark" class="h-12 w-4 rounded-full bg-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.6)] transition-all"></span>
+                    <span id="gridMark" class="h-12 w-20 rounded-md border-2 border-teal-400 bg-teal-50 transition-colors"></span>
+                    <span class="h-9 w-9 rounded-full bg-slate-200"></span>
+                  </div>
+                  <p id="infraLabel" class="mt-3 text-sm font-semibold text-zinc-700">조명과 전력 운영이 안정적으로 연결됨</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+            <h2 class="text-lg font-bold">기술 카드</h2>
+            <p class="mt-1 text-sm leading-6 text-zinc-600">카드를 눌러 도시 보드에 적용하거나 제거합니다.</p>
+            <div id="techCards" class="mt-4 grid gap-2"></div>
+          </aside>
+        </div>
+
+        <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <h2 class="text-lg font-bold">도시 운영 실험</h2>
+
+          <div class="mt-4 grid gap-2" role="group" aria-label="운영 프리셋">
+            <button class="preset rounded-md border px-3 py-2 text-left text-sm font-bold transition" type="button" data-preset="efficiency">
+              기술 효율 우선
+              <span class="block pt-1 text-xs font-semibold opacity-80">기술 많이, 데이터 높음</span>
+            </button>
+            <button class="preset rounded-md border px-3 py-2 text-left text-sm font-bold transition" type="button" data-preset="citizen">
+              시민 참여 우선
+              <span class="block pt-1 text-xs font-semibold opacity-80">기술 적게, 데이터 낮음</span>
+            </button>
+            <button class="preset rounded-md border px-3 py-2 text-left text-sm font-bold transition" type="button" data-preset="balanced">
+              균형형
+              <span class="block pt-1 text-xs font-semibold opacity-80">필요 기술, 데이터 보통</span>
+            </button>
+          </div>
+
+          <div class="mt-5 rounded-md bg-zinc-50 p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-bold">데이터 수집 수준</h3>
+                <p class="mt-1 text-xs leading-5 text-zinc-600">높일수록 편리성도, 개인정보 위험도 함께 움직입니다.</p>
+              </div>
+              <span id="dataBadge" class="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-800">보통</span>
+            </div>
+            <div class="mt-3 grid grid-cols-3 gap-2" role="group" aria-label="데이터 수집 수준">
+              <button class="data-toggle rounded-md border px-2 py-2 text-sm font-bold" type="button" data-level="low">낮음</button>
+              <button class="data-toggle rounded-md border px-2 py-2 text-sm font-bold" type="button" data-level="medium">보통</button>
+              <button class="data-toggle rounded-md border px-2 py-2 text-sm font-bold" type="button" data-level="high">높음</button>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-sm font-bold">도시 상태 지표</h3>
+              <span id="modeLabel" class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-700">균형형</span>
+            </div>
+            <div id="metrics" class="mt-3 space-y-3"></div>
+          </div>
+
+          <div class="mt-5 rounded-md border border-sky-200 bg-sky-50 p-4">
+            <p class="text-xs font-bold text-sky-700">현재 진단</p>
+            <p id="diagnosis" class="mt-2 text-base font-bold leading-7 text-zinc-900"></p>
+            <p id="diagnosisDetail" class="mt-2 text-sm leading-6 text-zinc-700"></p>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const techs = [
+        {
+          id: "road",
+          name: "스마트 도로",
+          short: "도로",
+          desc: "교통량을 감지해 신호를 조정",
+          delta: { convenience: 14, cost: 10, privacy: 9, equity: -2, trust: -3 },
+        },
+        {
+          id: "parking",
+          name: "스마트 주차",
+          short: "주차",
+          desc: "빈 주차 공간을 실시간 안내",
+          delta: { convenience: 11, cost: 8, privacy: 8, equity: -5, trust: -3 },
+        },
+        {
+          id: "waste",
+          name: "폐기물 관리",
+          short: "폐기물",
+          desc: "수거량을 보고 동선을 조정",
+          delta: { convenience: 8, cost: 7, privacy: 4, equity: 4, trust: 1 },
+        },
+        {
+          id: "lights",
+          name: "스마트 가로등",
+          short: "가로등",
+          desc: "보행량에 맞춰 밝기를 조절",
+          delta: { convenience: 7, cost: 6, privacy: 7, equity: 2, trust: -1 },
+        },
+        {
+          id: "air",
+          name: "대기 오염 관리",
+          short: "대기",
+          desc: "오염 변화를 감지해 경보",
+          delta: { convenience: 9, cost: 9, privacy: 10, equity: 5, trust: 0 },
+        },
+        {
+          id: "grid",
+          name: "스마트 그리드",
+          short: "전력",
+          desc: "전력 사용과 공급을 자동 조절",
+          delta: { convenience: 10, cost: 11, privacy: 6, equity: 3, trust: 1 },
+        },
+      ];
+
+      const presets = {
+        efficiency: {
+          label: "기술 효율 우선",
+          caption: "기술 효율 우선: 많은 기술과 높은 데이터 수집으로 운영 효율을 밀어 올립니다.",
+          selected: ["road", "parking", "waste", "lights", "air", "grid"],
+          dataLevel: "high",
+          civic: { convenience: 4, cost: 6, privacy: 3, equity: -10, trust: -12 },
+        },
+        citizen: {
+          label: "시민 참여 우선",
+          caption: "시민 참여 우선: 기술 수를 줄이고 필요한 데이터만 모아 신뢰와 형평성을 지킵니다.",
+          selected: ["waste", "lights", "air"],
+          dataLevel: "low",
+          civic: { convenience: -1, cost: -5, privacy: -5, equity: 20, trust: 22 },
+        },
+        balanced: {
+          label: "균형형",
+          caption: "균형형 구성: 필요한 기술을 연결하되 데이터 수집은 보통으로 둡니다.",
+          selected: ["road", "waste", "air", "grid"],
+          dataLevel: "medium",
+          civic: { convenience: 0, cost: 0, privacy: -2, equity: 8, trust: 8 },
+        },
+      };
+
+      const dataLevels = {
+        low: {
+          label: "낮음",
+          delta: { convenience: -6, cost: 0, privacy: -12, equity: 3, trust: 9 },
+          network: 0.25,
+        },
+        medium: {
+          label: "보통",
+          delta: { convenience: 5, cost: 0, privacy: 4, equity: 0, trust: 0 },
+          network: 0.58,
+        },
+        high: {
+          label: "높음",
+          delta: { convenience: 18, cost: 4, privacy: 26, equity: -3, trust: -12 },
+          network: 0.95,
+        },
+      };
+
+      const metricInfo = [
+        { id: "convenience", label: "편리성", good: true, color: "bg-sky-500" },
+        { id: "cost", label: "비용 부담", good: false, color: "bg-rose-500" },
+        { id: "privacy", label: "개인정보 위험", good: false, color: "bg-amber-500" },
+        { id: "equity", label: "형평성", good: true, color: "bg-emerald-500" },
+        { id: "trust", label: "시민 신뢰", good: true, color: "bg-violet-500" },
+      ];
+
+      const baseScores = { convenience: 30, cost: 18, privacy: 16, equity: 54, trust: 55 };
+      const state = {
+        selected: new Set(presets.balanced.selected),
+        dataLevel: "medium",
+        preset: "balanced",
+        civic: presets.balanced.civic,
+      };
+
+      const clamp = (value) => Math.max(0, Math.min(100, Math.round(value)));
+
+      function calculateScores() {
+        const scores = { ...baseScores };
+        state.selected.forEach((id) => {
+          const tech = techs.find((item) => item.id === id);
+          Object.entries(tech.delta).forEach(([key, value]) => {
+            scores[key] += value;
+          });
+        });
+
+        Object.entries(dataLevels[state.dataLevel].delta).forEach(([key, value]) => {
+          scores[key] += value;
+        });
+
+        Object.entries(state.civic).forEach(([key, value]) => {
+          scores[key] += value;
+        });
+
+        Object.keys(scores).forEach((key) => {
+          scores[key] = clamp(scores[key]);
+        });
+
+        return scores;
+      }
+
+      function levelText(value, isRisk) {
+        if (value >= 72) return isRisk ? "높음" : "강함";
+        if (value >= 46) return "보통";
+        return isRisk ? "낮음" : "취약";
+      }
+
+      function updateTechCards() {
+        const container = document.getElementById("techCards");
+        container.innerHTML = "";
+        techs.forEach((tech) => {
+          const active = state.selected.has(tech.id);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.tech = tech.id;
+          button.className = [
+            "tech-card rounded-md border p-3 text-left transition",
+            active
+              ? "border-sky-600 bg-sky-50 shadow-sm"
+              : "border-zinc-200 bg-white hover:border-sky-300 hover:bg-slate-50",
+          ].join(" ");
+          button.innerHTML = `
+            <span class="flex items-center justify-between gap-2">
+              <span class="text-sm font-bold text-zinc-900">${tech.name}</span>
+              <span class="rounded-full px-2 py-0.5 text-xs font-bold ${active ? "bg-sky-600 text-white" : "bg-zinc-100 text-zinc-500"}">${active ? "적용" : "해제"}</span>
+            </span>
+            <span class="mt-1 block text-xs leading-5 text-zinc-600">${tech.desc}</span>
+          `;
+          button.addEventListener("click", () => {
+            if (state.selected.has(tech.id)) {
+              state.selected.delete(tech.id);
+            } else {
+              state.selected.add(tech.id);
+            }
+            state.preset = "custom";
+            render();
+          });
+          container.appendChild(button);
+        });
+      }
+
+      function updatePresetButtons() {
+        document.querySelectorAll(".preset").forEach((button) => {
+          const active = button.dataset.preset === state.preset;
+          button.className = [
+            "preset rounded-md border px-3 py-2 text-left text-sm font-bold transition",
+            active
+              ? "border-zinc-950 bg-zinc-950 text-white"
+              : "border-zinc-200 bg-white text-zinc-800 hover:border-sky-400 hover:bg-sky-50",
+          ].join(" ");
+        });
+      }
+
+      function updateDataButtons() {
+        document.querySelectorAll(".data-toggle").forEach((button) => {
+          const active = button.dataset.level === state.dataLevel;
+          button.className = [
+            "data-toggle rounded-md border px-2 py-2 text-sm font-bold",
+            active
+              ? "border-sky-700 bg-sky-700 text-white"
+              : "border-zinc-200 bg-white text-zinc-700 hover:border-sky-400",
+          ].join(" ");
+        });
+        document.getElementById("dataBadge").textContent = dataLevels[state.dataLevel].label;
+      }
+
+      function updateMetrics(scores) {
+        const container = document.getElementById("metrics");
+        container.innerHTML = "";
+        metricInfo.forEach((metric) => {
+          const value = scores[metric.id];
+          const isRisk = !metric.good;
+          const row = document.createElement("div");
+          row.className = "rounded-md bg-zinc-50 p-3";
+          row.innerHTML = `
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm font-bold text-zinc-800">${metric.label}</span>
+              <span class="text-xs font-bold ${isRisk ? "text-rose-700" : "text-zinc-600"}">${levelText(value, isRisk)} · ${value}</span>
+            </div>
+            <div class="mt-2 h-3 overflow-hidden rounded-full bg-zinc-200">
+              <div class="h-full rounded-full ${metric.color} transition-all duration-300" style="width: ${value}%"></div>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      function updateBoard(scores) {
+        const count = state.selected.size;
+        document.getElementById("activeCount").textContent = count;
+        document.getElementById("boardCaption").textContent =
+          state.preset === "custom" ? "직접 조정 중: 마지막으로 선택한 운영 기준은 유지한 채 기술 구성을 바꿉니다." : presets[state.preset].caption;
+
+        document.getElementById("roadFlow").style.width = `${Math.max(28, Math.min(100, scores.convenience))}%`;
+        document.getElementById("roadLabel").textContent = state.selected.has("road") || state.selected.has("parking")
+          ? "교통·주차 데이터가 실시간으로 연결됨"
+          : "교통 운영은 기본 신호 체계 중심";
+        document.getElementById("homeLabel").textContent = scores.equity >= 72
+          ? "서비스 접근성이 여러 지역에 고르게 배치됨"
+          : scores.equity < 45
+            ? "중심 지역에 편의가 몰릴 위험이 보임"
+            : "생활 서비스 접근성이 보통입니다";
+        document.getElementById("envLabel").textContent = state.selected.has("air") && state.selected.has("waste")
+          ? "대기와 폐기물 변화를 함께 감지"
+          : state.selected.has("air") || state.selected.has("waste")
+            ? "환경 관리 일부만 감지"
+            : "환경 관리는 정기 점검 중심";
+        document.getElementById("infraLabel").textContent = state.selected.has("grid")
+          ? "전력 사용 변화가 운영에 반영됨"
+          : "전력 운영은 고정 계획 중심";
+
+        document.getElementById("airMark").className = [
+          "h-11 w-11 rounded-full border-4 transition-colors",
+          state.selected.has("air") ? "border-emerald-400 bg-emerald-100" : "border-zinc-300 bg-zinc-100",
+        ].join(" ");
+        document.getElementById("wasteMark").className = [
+          "h-9 w-12 rounded-t-md transition-colors",
+          state.selected.has("waste") ? "bg-emerald-500" : "bg-zinc-300",
+        ].join(" ");
+        document.getElementById("lightMark").className = [
+          "h-12 w-4 rounded-full transition-all",
+          state.selected.has("lights") ? "bg-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.6)]" : "bg-zinc-300 shadow-none",
+        ].join(" ");
+        document.getElementById("gridMark").className = [
+          "h-12 w-20 rounded-md border-2 transition-colors",
+          state.selected.has("grid") ? "border-teal-400 bg-teal-50" : "border-zinc-300 bg-zinc-100",
+        ].join(" ");
+
+        const network = document.getElementById("networkLayer");
+        const opacity = dataLevels[state.dataLevel].network;
+        network.style.opacity = opacity;
+        network.classList.toggle("pulse-high", state.dataLevel === "high");
+      }
+
+      const eunNeun = (str) => {
+        const code = str.charCodeAt(str.length - 1);
+        if (code < 0xAC00 || code > 0xD7A3) return "은";
+        return (code - 0xAC00) % 28 === 0 ? "는" : "은";
+      };
+
+      function makeDiagnosis(scores) {
+        const sortedStrengths = metricInfo
+          .filter((metric) => metric.good)
+          .sort((a, b) => scores[b.id] - scores[a.id]);
+        const sortedRisks = metricInfo
+          .filter((metric) => !metric.good)
+          .sort((a, b) => scores[b.id] - scores[a.id]);
+        const weakGood = sortedStrengths.filter((metric) => scores[metric.id] < 55);
+        const highRisks = sortedRisks.filter((metric) => scores[metric.id] >= 60);
+        const strongest = sortedStrengths[0];
+        const risk = sortedRisks[0];
+
+        let headline = `${strongest.label}${eunNeun(strongest.label)} 높지만, ${risk.label}이 함께 커진 도시입니다.`;
+        if (state.preset === "citizen") {
+          headline = `시민 신뢰와 형평성이 강하지만, 편리성 상승은 비교적 천천히 나타나는 도시입니다.`;
+        } else if (scores.convenience >= 78 && (scores.privacy >= 70 || scores.cost >= 70)) {
+          headline = `편리성은 뚜렷하지만, 비용 부담과 개인정보 위험이 취약점으로 드러나는 도시입니다.`;
+        } else if (highRisks.length === 0 && weakGood.length === 0) {
+          headline = `어느 한 지표가 극단으로 치우치지 않은 균형형 도시입니다.`;
+        } else if (scores.trust < 50) {
+          headline = `기술 성과는 보이지만, 시민 신뢰가 약해지는 도시입니다.`;
+        }
+
+        const detailParts = [];
+        detailParts.push(`데이터 수집 수준은 ${dataLevels[state.dataLevel].label}이며, 적용 기술은 ${state.selected.size}개입니다.`);
+        if (highRisks.length > 0) {
+          detailParts.push(`관리가 필요한 지표는 ${highRisks.map((metric) => metric.label).join(", ")}입니다.`);
+        }
+        if (weakGood.length > 0) {
+          detailParts.push(`취약한 지표는 ${weakGood.map((metric) => metric.label).join(", ")}입니다.`);
+        }
+        if (highRisks.length === 0 && weakGood.length === 0) {
+          detailParts.push("현재 구성은 편의와 공공성 사이의 긴장을 비교적 고르게 나눕니다.");
+        }
+
+        return { headline, detail: detailParts.join(" ") };
+      }
+
+      function render() {
+        const scores = calculateScores();
+        updatePresetButtons();
+        updateDataButtons();
+        updateTechCards();
+        updateMetrics(scores);
+        updateBoard(scores);
+
+        const modeText = state.preset === "custom" ? "직접 조정" : presets[state.preset].label;
+        document.getElementById("modeLabel").textContent = modeText;
+        const diagnosis = makeDiagnosis(scores);
+        document.getElementById("diagnosis").textContent = diagnosis.headline;
+        document.getElementById("diagnosisDetail").textContent = diagnosis.detail;
+      }
+
+      document.querySelectorAll(".preset").forEach((button) => {
+        button.addEventListener("click", () => {
+          const preset = presets[button.dataset.preset];
+          state.selected = new Set(preset.selected);
+          state.dataLevel = preset.dataLevel;
+          state.preset = button.dataset.preset;
+          state.civic = preset.civic;
+          render();
+        });
+      });
+
+      document.querySelectorAll(".data-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.dataLevel = button.dataset.level;
+          if (state.preset !== "custom") {
+            state.preset = "custom";
+          }
+          render();
+        });
+      });
+
+      render();
+    </script>
+  </body>
+</html>
