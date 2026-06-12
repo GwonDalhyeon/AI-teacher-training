@@ -5,57 +5,349 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>수평 투사 운동</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .path-line {
+        fill: none;
+        stroke-linecap: round;
+        stroke-width: 4;
+      }
+
+      .motion-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .ball {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 10px 24px rgb(15 23 42 / 0.22);
+      }
+
+      .landing-pulse {
+        animation: pulse 900ms ease-out infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1.45);
+          opacity: 0;
+        }
+      }
+    </style>
   </head>
   <body class="min-h-screen bg-sky-50 text-zinc-950">
-    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-6 sm:px-8">
+    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
       <header class="mb-5">
-        <p class="text-sm font-semibold text-sky-700">통합과학1 시연</p>
-        <h1 class="mt-1 text-3xl font-bold tracking-normal sm:text-4xl">수평 투사 운동</h1>
+        <div class="flex flex-wrap items-center gap-2">
+          <a class="text-sm font-semibold text-sky-700 hover:text-sky-900" href="../">연수 시연용 웹앱</a>
+          <span class="text-sm text-zinc-400">/</span>
+          <p class="text-sm font-semibold text-sky-700">통합과학1</p>
+        </div>
+        <h1 class="mt-2 text-3xl font-bold tracking-normal sm:text-4xl">수평 투사 운동</h1>
         <p class="mt-3 max-w-3xl text-base leading-7 text-zinc-700">
           빠르게 던지면 더 빨리 떨어질 것 같지만, 같은 높이에서 출발하면 수평 속력이 달라도 낙하 시간은 같습니다.
         </p>
       </header>
 
-      <section class="grid flex-1 gap-4 lg:grid-cols-[1fr_320px]">
-        <div class="rounded-lg border border-sky-200 bg-white p-4 shadow-sm">
-          <div class="relative h-[420px] overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-b from-sky-100 to-white">
-            <div class="absolute left-0 right-0 bottom-12 h-1 bg-zinc-700"></div>
-            <div class="absolute left-8 top-24 h-2 w-24 rounded bg-zinc-600"></div>
-            <div class="absolute left-8 top-40 h-2 w-24 rounded bg-zinc-600"></div>
-            <div class="absolute left-28 top-[88px] h-5 w-5 rounded-full bg-teal-500 shadow"></div>
-            <div class="absolute left-28 top-[152px] h-5 w-5 rounded-full bg-amber-500 shadow"></div>
-            <div class="absolute left-6 bottom-4 text-sm font-semibold text-zinc-600">시각화 영역</div>
-            <div class="absolute right-5 top-5 rounded-md bg-white/85 px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm">
-              구현 예정: 두 공의 동시 착지 애니메이션
+      <section class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <div class="rounded-lg border border-sky-200 bg-white p-3 shadow-sm sm:p-4">
+          <div
+            id="scene"
+            class="relative h-[430px] min-h-[360px] overflow-hidden rounded-md border border-zinc-200 bg-gradient-to-b from-sky-100 via-white to-sky-50"
+            aria-label="수평 투사 운동 시각화"
+          >
+            <svg id="trajectorySvg" class="motion-layer" aria-hidden="true">
+              <path id="comparePath" class="path-line stroke-teal-500" opacity="0.85" />
+              <path id="basePath" class="path-line stroke-amber-500" opacity="0.85" />
+            </svg>
+
+            <div id="baseLandingLine" class="absolute bottom-12 hidden h-[72%] w-0.5 bg-amber-400/80"></div>
+            <div id="compareLandingLine" class="absolute bottom-12 hidden h-[72%] w-0.5 bg-teal-400/80"></div>
+            <div class="absolute bottom-12 left-0 right-0 h-1 bg-zinc-700"></div>
+            <div class="absolute left-[8%] top-[19%] h-4 w-[15%] rounded bg-zinc-700 shadow-sm"></div>
+            <div class="absolute left-[8%] top-[calc(19%+14px)] h-[54%] w-2 rounded bg-zinc-500"></div>
+
+            <div id="compareBall" class="ball bg-teal-500 ring-4 ring-teal-100"></div>
+            <div id="baseBall" class="ball bg-amber-500 ring-4 ring-amber-100"></div>
+
+            <div id="landingBadge" class="absolute left-1/2 top-5 hidden -translate-x-1/2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-bold text-white shadow-lg">
+              동시 착지
+            </div>
+
+            <div id="pulseA" class="absolute bottom-[42px] hidden h-10 w-10 -translate-x-1/2 rounded-full border-4 border-teal-400 landing-pulse"></div>
+            <div id="pulseB" class="absolute bottom-[42px] hidden h-10 w-10 -translate-x-1/2 rounded-full border-4 border-amber-400 landing-pulse"></div>
+
+            <div class="absolute left-4 top-4 rounded-md bg-white/90 px-3 py-2 text-xs font-semibold text-zinc-600 shadow-sm sm:text-sm">
+              같은 높이에서 동시에 출발
+            </div>
+
+            <div class="absolute bottom-3 left-4 right-4 grid gap-2 text-xs font-semibold text-zinc-700 sm:grid-cols-2 sm:text-sm">
+              <div class="rounded-md bg-white/90 px-3 py-2 shadow-sm">
+                <span class="inline-block h-3 w-3 rounded-full bg-teal-500"></span>
+                비교 공: <span id="compareLabel">느림</span>
+              </div>
+              <div class="rounded-md bg-white/90 px-3 py-2 shadow-sm">
+                <span class="inline-block h-3 w-3 rounded-full bg-amber-500"></span>
+                기준 공: 빠름
+              </div>
             </div>
           </div>
         </div>
 
         <aside class="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
           <h2 class="text-lg font-bold">시연 조작</h2>
-          <div class="mt-4 grid grid-cols-3 gap-2">
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">느림</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">보통</button>
-            <button class="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold">빠름</button>
+          <div class="mt-4 grid gap-2" role="group" aria-label="비교 속도 선택">
+            <button
+              class="preset rounded-md border border-sky-700 bg-sky-700 px-3 py-2 text-sm font-semibold text-white"
+              type="button"
+              data-preset="slow"
+            >
+              느림 vs 빠름
+            </button>
+            <button
+              class="preset rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-500"
+              type="button"
+              data-preset="medium"
+            >
+              보통 vs 빠름
+            </button>
+            <button
+              class="preset rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-500"
+              type="button"
+              data-preset="veryFast"
+            >
+              매우 빠름 vs 빠름
+            </button>
           </div>
-          <button class="mt-3 w-full rounded-md bg-sky-700 px-4 py-3 text-sm font-bold text-white">동시에 발사</button>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button id="launchButton" class="rounded-md bg-zinc-950 px-4 py-3 text-sm font-bold text-white hover:bg-zinc-800" type="button">
+              동시에 발사
+            </button>
+            <button id="resetButton" class="rounded-md border border-zinc-300 px-4 py-3 text-sm font-bold text-zinc-800 hover:border-zinc-500" type="button">
+              다시 보기
+            </button>
+          </div>
 
           <dl class="mt-5 space-y-3 text-sm">
             <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">느린 공 낙하 시간</dt>
-              <dd class="mt-1 text-xl font-bold">같음</dd>
+              <dt class="font-semibold text-zinc-600">낙하 시간</dt>
+              <dd class="mt-1 text-2xl font-bold"><span id="timeValue">2.8</span>초로 같음</dd>
             </div>
-            <div class="rounded-md bg-zinc-50 p-3">
-              <dt class="font-semibold text-zinc-600">빠른 공 낙하 시간</dt>
-              <dd class="mt-1 text-xl font-bold">같음</dd>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-md bg-teal-50 p-3">
+                <dt class="font-semibold text-teal-800">비교 공 거리</dt>
+                <dd class="mt-1 text-xl font-bold"><span id="compareDistance">28</span>m</dd>
+              </div>
+              <div class="rounded-md bg-amber-50 p-3">
+                <dt class="font-semibold text-amber-800">기준 공 거리</dt>
+                <dd class="mt-1 text-xl font-bold"><span id="baseDistance">76</span>m</dd>
+              </div>
             </div>
             <div class="rounded-md bg-sky-50 p-3">
               <dt class="font-semibold text-sky-800">관찰 포인트</dt>
-              <dd class="mt-1 leading-6 text-zinc-700">멀리 가는 정도는 달라도 바닥에 닿는 순간은 같습니다.</dd>
+              <dd id="observation" class="mt-1 leading-6 text-zinc-700">
+                수평으로 멀리 가는 정도는 달라도, 아래로 떨어지는 시간은 같습니다.
+              </dd>
             </div>
           </dl>
         </aside>
       </section>
     </main>
+
+    <script>
+      const presets = {
+        slow: {
+          label: "느림",
+          compareSpeed: 10,
+          baseSpeed: 28,
+          compareDistance: 28,
+          baseDistance: 76,
+          note: "느린 공은 가까이 떨어지고 빠른 공은 멀리 떨어집니다. 그래도 착지 순간은 같습니다.",
+        },
+        medium: {
+          label: "보통",
+          compareSpeed: 19,
+          baseSpeed: 28,
+          compareDistance: 52,
+          baseDistance: 76,
+          note: "수평 속력이 커지면 이동 거리는 늘어나지만, 떨어지는 시간은 바뀌지 않습니다.",
+        },
+        veryFast: {
+          label: "매우 빠름",
+          compareSpeed: 42,
+          baseSpeed: 28,
+          compareDistance: 114,
+          baseDistance: 76,
+          note: "비교 공이 기준 공보다 더 멀리 가도, 같은 높이에서 출발했기 때문에 동시에 도착합니다.",
+        },
+      };
+
+      const scene = document.getElementById("scene");
+      const compareBall = document.getElementById("compareBall");
+      const baseBall = document.getElementById("baseBall");
+      const comparePath = document.getElementById("comparePath");
+      const basePath = document.getElementById("basePath");
+      const compareLabel = document.getElementById("compareLabel");
+      const compareDistance = document.getElementById("compareDistance");
+      const baseDistance = document.getElementById("baseDistance");
+      const observation = document.getElementById("observation");
+      const launchButton = document.getElementById("launchButton");
+      const resetButton = document.getElementById("resetButton");
+      const landingBadge = document.getElementById("landingBadge");
+      const pulseA = document.getElementById("pulseA");
+      const pulseB = document.getElementById("pulseB");
+      const compareLandingLine = document.getElementById("compareLandingLine");
+      const baseLandingLine = document.getElementById("baseLandingLine");
+      const presetButtons = [...document.querySelectorAll(".preset")];
+
+      const durationMs = 2800;
+      let selectedKey = "slow";
+      let animationId = null;
+      let startTime = null;
+
+      function getSceneMetrics() {
+        const width = scene.clientWidth;
+        const height = scene.clientHeight;
+        return {
+          startX: Math.max(94, width * 0.18),
+          startY: height * 0.21,
+          groundY: height - 48,
+          maxX: width - 46,
+        };
+      }
+
+      function pointAt(progress, distancePx) {
+        const metrics = getSceneMetrics();
+        const x = metrics.startX + distancePx * progress;
+        const y = metrics.startY + (metrics.groundY - metrics.startY) * progress * progress;
+        return { x, y };
+      }
+
+      function distanceToPixels(speed) {
+        const metrics = getSceneMetrics();
+        const maxDistance = metrics.maxX - metrics.startX;
+        const normalized = speed / 42;
+        return Math.min(maxDistance, Math.max(80, maxDistance * normalized));
+      }
+
+      function buildPath(distancePx) {
+        const steps = 34;
+        const points = [];
+        for (let i = 0; i <= steps; i += 1) {
+          const p = pointAt(i / steps, distancePx);
+          points.push(`${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`);
+        }
+        return points.join(" ");
+      }
+
+      function setBall(ball, point, xOffset = 0) {
+        ball.style.left = `${point.x + xOffset}px`;
+        ball.style.top = `${point.y}px`;
+      }
+
+      function setLandingMarker(element, distancePx) {
+        const metrics = getSceneMetrics();
+        element.style.left = `${metrics.startX + distancePx}px`;
+      }
+
+      function clearAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        startTime = null;
+        landingBadge.classList.add("hidden");
+        pulseA.classList.add("hidden");
+        pulseB.classList.add("hidden");
+      }
+
+      function render(progress = 0) {
+        const preset = presets[selectedKey];
+        const comparePx = distanceToPixels(preset.compareSpeed);
+        const basePx = distanceToPixels(preset.baseSpeed);
+
+        comparePath.setAttribute("d", buildPath(comparePx));
+        basePath.setAttribute("d", buildPath(basePx));
+        const startOffset = progress < 0.02 ? 9 : 0;
+        setBall(compareBall, pointAt(progress, comparePx), -startOffset);
+        setBall(baseBall, pointAt(progress, basePx), startOffset);
+        setLandingMarker(compareLandingLine, comparePx);
+        setLandingMarker(baseLandingLine, basePx);
+        setLandingMarker(pulseA, comparePx);
+        setLandingMarker(pulseB, basePx);
+        compareLandingLine.classList.remove("hidden");
+        baseLandingLine.classList.remove("hidden");
+      }
+
+      function updateText() {
+        const preset = presets[selectedKey];
+        compareLabel.textContent = preset.label;
+        compareDistance.textContent = preset.compareDistance;
+        baseDistance.textContent = preset.baseDistance;
+        observation.textContent = preset.note;
+      }
+
+      function selectPreset(key) {
+        selectedKey = key;
+        clearAnimation();
+        updateText();
+        render(0);
+        presetButtons.forEach((button) => {
+          const active = button.dataset.preset === key;
+          button.className = active
+            ? "preset rounded-md border border-sky-700 bg-sky-700 px-3 py-2 text-sm font-semibold text-white"
+            : "preset rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-800 hover:border-sky-500";
+        });
+      }
+
+      function launch(timestamp) {
+        if (!startTime) {
+          startTime = timestamp;
+        }
+        const progress = Math.min((timestamp - startTime) / durationMs, 1);
+        render(progress);
+
+        if (progress < 1) {
+          animationId = requestAnimationFrame(launch);
+          return;
+        }
+
+        animationId = null;
+        landingBadge.classList.remove("hidden");
+        pulseA.classList.remove("hidden");
+        pulseB.classList.remove("hidden");
+      }
+
+      presetButtons.forEach((button) => {
+        button.addEventListener("click", () => selectPreset(button.dataset.preset));
+      });
+
+      launchButton.addEventListener("click", () => {
+        clearAnimation();
+        render(0);
+        animationId = requestAnimationFrame(launch);
+      });
+
+      resetButton.addEventListener("click", () => {
+        clearAnimation();
+        render(0);
+      });
+
+      window.addEventListener("resize", () => {
+        render(animationId ? 0 : 0);
+      });
+
+      selectPreset("slow");
+    </script>
   </body>
 </html>
