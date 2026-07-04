@@ -1,13 +1,26 @@
 # Large or restricted reference materials
 source/*.pdf
+source/*.pptx
+source/*.md
 *.hwp
 *.hwpx
 manifest.jsonl
 
-# Generated exports
+# Generated exports / outputs
 exports/*.pdf
 exports/*.pptx
 exports/*.zip
+slides/*.pptx
+planning/*.pdf
+산출물/
+
+# Office unpacked working dirs (build internals)
+**/pptx_unpacked/
+**/template_unpacked/
+**/work_unpacked/
+
+# Local agent config
+.claude/
 
 # Local/editor files
 .DS_Store
