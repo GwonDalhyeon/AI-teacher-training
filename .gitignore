@@ -13,6 +13,7 @@ exports/*.zip
 slides/*.pptx
 planning/*.pdf
 산출물/
+기획안/
 
 # Office unpacked working dirs (build internals)
 **/pptx_unpacked/
