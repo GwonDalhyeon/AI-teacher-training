@@ -11,7 +11,7 @@
 `second-round-training-baseline.md`를 기준으로 삼는다.
 
 개인 연락처와 서명 등 개인정보는 이 Markdown 문서에 기록하지 않는다. 제출용 HWPX와
-PDF는 Git에서 제외된 `기획안/` 폴더에서만 관리한다.
+PDF는 저장소 밖의 `../AI_Workspace/projects/AI-teacher-training/기획안/`에서만 관리한다.
 
 ## 2. 확정된 과정 개요
 
@@ -120,8 +120,8 @@ Antigravity 등 자신이 사용할 수 있는 서비스를 선택한다. 제품
 다음 HWPX 통합작성본을 생성했다. 이 파일들은 개인정보 보호와 원본 자료 비공개 원칙에
 따라 Git에서 제외한다.
 
-- `기획안/2차 기획안/기획안신청서(권달현)_통합작성본.hwpx`
-- `기획안/2차 기획안/강사소개서(권달현)_통합작성본.hwpx`
+- `../AI_Workspace/projects/AI-teacher-training/기획안/2차 기획안/기획안신청서(권달현)_통합작성본.hwpx`
+- `../AI_Workspace/projects/AI-teacher-training/기획안/2차 기획안/강사소개서(권달현)_통합작성본.hwpx`
 
 두 문서는 원본 서식을 보존하여 작성했고 패키지·문서 구조·재열기 검사를 통과했다.
 원본 양식과 기존 작업본은 덮어쓰지 않았다.

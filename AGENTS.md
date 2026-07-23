@@ -159,4 +159,5 @@ Work as an educational-training planner and lesson-design collaborator for teach
 - **참조 경로**: 프로젝트 루트 기준 상대경로 `../AI_Workspace/`. 하위 폴더에서 작업 중이어도 항상 프로젝트 루트를 기준으로 해석한다. 모든 PC에서 `AI_Workspace`를 프로젝트와 같은 상위 폴더(형제)에 두면 로컬이 달라도 동일하게 동작한다.
 - **먼저 목록 확인**: 매번 자료를 스캔하지 말고 `../AI_Workspace/INDEX.md`를 읽어 무엇이 있는지 파악한 뒤 필요한 파일만 연다.
 - **참조 예**: `../AI_Workspace/shared/...` (구체 경로는 INDEX.md 참고)
-- **규칙**: 읽기 전용 참조다. 저작권·개인정보 보호를 위해 이 자료를 프로젝트(git) 안으로 복사하지 않는다.
+- **프로젝트 기획안 경로**: `../AI_Workspace/projects/AI-teacher-training/기획안/`
+- **규칙**: `shared/` 자료는 읽기 전용 참조다. `projects/AI-teacher-training/기획안/`은 이 프로젝트의 비공개 작업 문서 영역이므로 사용자 요청에 따라 읽고 편집할 수 있다. 두 영역 모두 저작권·개인정보 보호를 위해 프로젝트(git) 안으로 복사하지 않는다.
